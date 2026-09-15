@@ -1,0 +1,57 @@
+name: CI
+
+# Roda em push na main e em todo pull request — é o portão de qualidade
+# da Fila 3 do AGENT_SYNC. Por enquanto cobre o servidor (Node); quando o
+# export web entrar em pipeline, adiciona-se um job do Godot aqui.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  server:
+    name: Servidor (Node ${{ matrix.node-version }})
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: server
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version: [20, 22]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Node ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: npm
+          cache-dependency-path: server/package-lock.json
+
+      - name: Instala dependências (lockfile)
+        run: npm ci
+
+      - name: Testes unitários (node:test)
+        run: npm test
+
+      - name: Smoke de boot (/health + graceful shutdown)
+        run: |
+          PORT=2567 node src/index.js &
+          SRV_PID=$!
+          for _ in $(seq 1 30); do
+            curl -fsS http://127.0.0.1:2567/health && break
+            sleep 1
+          done
+          curl -fsS http://127.0.0.1:2567/health
+          kill -TERM "$SRV_PID"
+          wait "$SRV_PID" || true
+        env:
+          PORT: "2567"
