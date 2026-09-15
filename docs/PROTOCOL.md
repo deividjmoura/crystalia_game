@@ -1,4 +1,4 @@
-# 📡 PROTOCOL — Crystalia (versão 1)
+# 📡 PROTOCOL — Crystalia (versão 1.0.1)
 
 **Contrato vivo das mensagens cliente ↔ servidor.** Se você vai tocar o shape
 de qualquer mensagem, lê isso INTEIRO primeiro — e muda num PR com aviso no
@@ -57,6 +57,7 @@ Não existe mensagem `join`.
 | `event/player_died` | `sessionId, killerId` | respawn automático em ~3s (`RESPAWN_MS`) |
 | `event/player_respawned` | `sessionId` | posição volta a (0,0) |
 | `player_left` | `sessionId` | remove ator remoto |
+| `kicked` | `reason` | enviado antes do close: `reconnected_elsewhere` (dedup por nome — anti-fantasma, #18) ou `message_flood` (rate-limit) |
 
 **Snapshot (`state`)**: os valores numéricos são o estado CORRENTE autoritativo
 naquele tick — sem sequência/delta encoding ainda (ok para o MVP; v2 opcional
@@ -88,14 +89,23 @@ com `seq` + LZ-string se crescer).
 Estes existem porque o protocolo diz ao cliente que ele manda "boas intenções",
 mas o servidor defende:
 
-1. **Sanitização de input**: clamp e normalização de `dx/dy` já em função.
-2. **Rate-limit de mensagens *(público previsto em POC)***: o servidor deve
-   derrubat / ignorar pacotes acima de ~60 msg/s por conexão.
-3. **Anti-speedhack *(público previsto em POC)***: por tick, a posição só
-   avança `MOVE_SPEED × dt + epsilon`. Qualquer outdoor indica bug/cheat — log.
-4. **Validação de alcance de skills** (precisa do `yaw`): futura skill dirigida
+1. **Sanitização de input**: clamp e normalização de `dx/dy` (já em função).
+2. **Rate-limit de mensagens *(✅ implementado 2026-09-15)***: janela de 1s,
+   máx. **60 msg/s** por conexão — o excesso é ignorado (e o cliente assume o
+   strike). **3 janelas seguidas** de flood = `kicked` + close `1008` ("message_flood").
+   Janela-limpa zera os strikes.
+3. **Anti-speedhack / invariante de velocidade *(✅ implementado)***: por
+   construção — posição só avança no tick autoritativo
+   (`pos += input × MOVE_SPEED × dt`); teste de invariante no CI prova
+   `Δpos ≤ MOVE_SPEED × Δt` para qualquer sequência de inputs. (Detecção ativa
+   por reconciliação fica fora do MVP — já é impossível pela arquitetura.)
+4. **Dedup por nome / anti-fantasma *(✅ implementado)***: no `join`, o mesmo
+   `displayName` (trim + case-insensitive) marca reconexão — sessão velha leva
+   `kicked` (`reconnected_elsewhere`) + close 1000, sai do mundo via
+   `player_left` e a nova assume o nome.
+5. **Validação de alcance de skills** (precisa do `yaw`): futura skill dirigida
    checa distância + cone de ângulo no servidor.
-5. **Relógio único**: toda duração usa `_now()` do servidor — **nunca** um
+6. **Relógio único**: toda duração usa `_now()` do servidor — **nunca** um
    timestamp do cliente.
 
 > Implemetação/owner: `arena-deivid` (server territory). Tests: `arena-c3`.
@@ -113,5 +123,5 @@ mas o servidor defende:
 4. Sinais vivem na memória do servidor — não há estado transpido em `state`
    para "efeito" (efeitos do Dom só via `event`!), mantém o tick barato.
 
-**Versionamento:** v1 ativa 2026-09-15. Mudanças na sessão
+**Versionamento:** v1.0.1 ativa 2026-09-15 — guard rails implementados + `kicked` documentado (issue #18). Mudanças na sessão
 [v1.1 proposto] acima = aprovadas na decisão do mural (migração 3ª pessoa).
