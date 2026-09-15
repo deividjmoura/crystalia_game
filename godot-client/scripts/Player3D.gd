@@ -18,6 +18,9 @@ var demo_mode: bool = false
 
 # Estado autoritativo (servidor) — plano XZ mapeado para 3D
 var _server_pos := Vector3.ZERO
+# Só corrige a posição DEPOIS do 1º estado real do servidor.
+# Sem isso, offline/POC o player faz lerp para a origem ("coleira" ~0,5 m do spawn).
+var _has_server_state := false
 var _last_input := Vector2.ZERO
 
 var hp := 100.0
@@ -31,6 +34,7 @@ var _name_label: Label3D
 var _avatar: Node3D
 
 func _ready() -> void:
+	_server_pos = global_position  # nasce no spawn, não na origem (0,0,0)
 	_camera_ctrl = get_node_or_null("CameraController") as CameraController
 	_build_avatar()
 	_build_name_label()
@@ -90,10 +94,20 @@ func _physics_process(delta: float) -> void:
 	elif Input.is_action_just_pressed("ui_accept"):  # espaço já mapeado em alguns projetos
 		velocity.y = JUMP_VELOCITY
 
+	_rotate_avatar_to(input_dir, delta)
 	move_and_slide()
 
-	# Interpola em direção ao servidor para não divergir
-	global_position = global_position.lerp(_server_pos, 0.15)
+	# Interpola em direção ao servidor para não divergir — apenas após o 1º
+	# estado real recebido; sem rede (POC/demo offline) não puxa para a origem.
+	if _has_server_state:
+		global_position = global_position.lerp(_server_pos, 0.15)
+
+func _rotate_avatar_to(direction: Vector2, delta: float) -> void:
+	if not _avatar or direction.length() < 0.01:
+		return
+	# Personagem olha pra onde anda (suavizado) — estilo Cyber-Ascension
+	var target_angle := atan2(direction.x, direction.y)
+	_avatar.rotation.y = lerp_angle(_avatar.rotation.y, target_angle, 10.0 * delta)
 
 func _demo_move(delta: float) -> void:
 	var input_dir := Vector2(
@@ -120,6 +134,7 @@ func configure(session: String, local: bool) -> void:
 		_camera_ctrl = null
 
 func apply_state(state: Dictionary) -> void:
+	_has_server_state = true
 	hp = float(state.get("hp", hp))
 	max_hp = float(state.get("maxHp", max_hp))
 	energy = float(state.get("energy", energy))
@@ -134,20 +149,123 @@ func apply_state(state: Dictionary) -> void:
 		if _name_label:
 			_name_label.text = display_name
 
+## Avatar low-poly do guerreiro Ignara — espelho 3D do sprite 2D
+## (player_ignara.png): cabelo preto espetado, cachecol vermelho-chama,
+## armadura escura com detalhes dourados e espada nas costas.
+## Tudo procedural: zero assets, ~15 primitivas, <2k tris.
+const _CORES := {
+	"pele":    Color(0.87, 0.68, 0.50),  # rosto/pele
+	"cabelo":  Color(0.12, 0.10, 0.09),  # preto castanho sintético
+	"olho":    Color(0.85, 0.27, 0.10),  # olhos castanho-fogo (emissive!)
+	"cachecol":Color(0.90, 0.31, 0.10),  # cachecol vermelho Ignara
+	"armadura":Color(0.13, 0.11, 0.11),  # couraço escuro quase-preto
+	"ouro":    Color(0.85, 0.55, 0.16),  # detalhes dourados
+	"calca":   Color(0.14, 0.16, 0.22),  # calça preta-azulada
+	"bota":    Color(0.08, 0.07, 0.06),  # botas pretas
+	"lamina":  Color(0.72, 0.70, 0.74),  # aço da espada
+}
+
 func _build_avatar() -> void:
-	# Placeholder low-poly (cápsula = corpo)
-	var mesh_instance := MeshInstance3D.new()
-	var capsule := CapsuleMesh.new()
-	capsule.radius = 0.28
-	capsule.height = 1.1
-	mesh_instance.mesh = capsule
-	mesh_instance.position.y = 0.9
-	var mat := StandardMaterial3D.new()
-	mat.albedo_color = Color(0.95, 0.35, 0.12)  # Ignara / fogo
-	mat.roughness = 0.55
-	mesh_instance.material_override = mat
-	add_child(mesh_instance)
-	_avatar = mesh_instance
+	_avatar = Node3D.new()
+	add_child(_avatar)
+
+	# --- Perfps e botas (leve afastar para postura de luta) ---
+	for side in [-1.0, 1.0]:
+		var boot := _box(Vector3(0.11, 0.10, 0.16), Vector3(side * 0.105, 0.05, 0.02), _CORES.bota)
+		var leg  := _cyl(0.075, 0.62, Vector3(side * 0.105, 0.42, 0), _CORES.calca)
+		_avatar.add_child(boot)
+		_avatar.add_child(leg)
+
+	# --- Torso: couraço escuro + tabard/cinto dourado ---
+	_avatar.add_child(_cyl(0.24, 0.62, Vector3(0, 0.95, 0), _CORES.armadura))
+	_avatar.add_child(_box(Vector3(0.46, 0.12, 0.36), Vector3(0, 0.66, 0.02), _CORES.ouro))       # cinto
+	_avatar.add_child(_box(Vector3(0.36, 0.30, 0.05), Vector3(0, 1.00, 0.235), _CORES.cachecol)) # brasão chama frente
+
+	# --- Braços com ombreiras douradas ---
+	for side in [-1.0, 1.0]:
+		_avatar.add_child(_box(Vector3(0.16, 0.10, 0.16), Vector3(side * 0.30, 1.18, 0), _CORES.ouro))    # ombreira
+		_avatar.add_child(_cyl(0.07, 0.52, Vector3(side * 0.34, 0.87, 0), _CORES.armadura))                # braço
+
+	# --- Cabeça + cabelo preto espetado ---
+	_avatar.add_child(_sphere(0.22, Vector3(0, 1.50, 0), _CORES.pele))
+	var hair := _sphere(0.235, Vector3(0, 1.56, -0.02), _CORES.cabelo)  # capacete de cabelo (um pouco maior/atrás)
+	_avatar.add_child(hair)
+	# franja (box gainchada para frente)
+	var fringe := _box(Vector3(0.34, 0.12, 0.10), Vector3(0, 1.55, 0.135), _CORES.cabelo)
+	fringe.rotation.x = -0.12
+	_avatar.add_child(fringe)
+	# "espinhos" estilo anime: 3 cones/levantes low-poly
+	for i in [-1.0, 0.0, 1.0]:
+		var spike := MeshInstance3D.new()
+		var cone := CylinderMesh.new()
+		cone.top_radius = 0.0
+		cone.bottom_radius = 0.055
+		cone.height = 0.18
+		spike.mesh = cone
+		spike.material_override = _mat(_CORES.cabelo)
+		spike.position = Vector3(i * 0.10, 1.82, -0.04 - abs(i) * 0.03)
+		spike.rotation.x = -0.35
+		spike.rotation.z = i * 0.25
+		_avatar.add_child(spike)
+
+	# --- Olhos flamejantes (emissive brilha low cost!) ---
+	for side in [-1.0, 1.0]:
+		var eye := _box(Vector3(0.045, 0.06, 0.045), Vector3(side * 0.085, 1.52, 0.195), _CORES.olho)
+		(eye.material_override as StandardMaterial3D).emission_enabled = true
+		(eye.material_override as StandardMaterial3D).emission = _CORES.olho
+		(eye.material_override as StandardMaterial3D).emission_energy_multiplier = 2.2
+		_avatar.add_child(eye)
+
+	# --- Cachecol: rolo no pescoço + ponta caída atrás ---
+	var scarf := _cyl(0.245, 0.14, Vector3(0, 1.32, 0), _CORES.cachecol)
+	_avatar.add_child(scarf)
+	var tail := _box(Vector3(0.16, 0.42, 0.052), Vector3(0, 1.08, -0.238), _CORES.cachecol)
+	tail.rotation.x = 0.18
+	_avatar.add_child(tail)
+
+	# --- Espada nas costas (punho escuro + guarda dourada + lâmina aço) ---
+	var grip   := _cyl(0.035, 0.24, Vector3(0.16, 1.72, -0.20), _CORES.armadura)
+	var guard  := _box(Vector3(0.16, 0.04, 0.04), Vector3(0.16, 1.60, -0.20), _CORES.ouro)
+	var blade  := _box(Vector3(0.055, 0.60, 0.022), Vector3(0.16, 1.31, -0.20), _CORES.lamina)
+	for piece in [grip, guard, blade]:
+		piece.rotation.z = -0.16  # anguladinha cansada antes eroi
+		_avatar.add_child(piece)
+
+func _box(size: Vector3, pos: Vector3, color: Color) -> MeshInstance3D:
+	var m := MeshInstance3D.new()
+	var b := BoxMesh.new()
+	b.size = size
+	m.mesh = b
+	m.material_override = _mat(color)
+	m.position = pos
+	return m
+
+func _cyl(radius: float, height: float, pos: Vector3, color: Color) -> MeshInstance3D:
+	var m := MeshInstance3D.new()
+	var c := CylinderMesh.new()
+	c.top_radius = radius
+	c.bottom_radius = radius
+	c.height = height
+	m.mesh = c
+	m.material_override = _mat(color)
+	m.position = pos
+	return m
+
+func _sphere(radius: float, pos: Vector3, color: Color) -> MeshInstance3D:
+	var m := MeshInstance3D.new()
+	var s := SphereMesh.new()
+	s.radius = radius
+	s.height = radius * 2.0
+	m.mesh = s
+	m.material_override = _mat(color)
+	m.position = pos
+	return m
+
+func _mat(color: Color) -> StandardMaterial3D:
+	var mm := StandardMaterial3D.new()
+	mm.albedo_color = color
+	mm.roughness = 0.72
+	return mm
 
 	# Colisão
 	var col := CollisionShape3D.new()
