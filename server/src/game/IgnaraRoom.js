@@ -35,7 +35,8 @@ class IgnaraRoom {
       energy: 100,
       maxEnergy: 100,
       alive: true,
-      displayName: String(displayName || "Aventureiro").slice(0, 20),
+      // trim antes do fallback: "   " (truthy) não pode virar o nome exibido.
+      displayName: String(displayName ?? "").trim().slice(0, 20) || "Aventureiro",
       lastFogoAt: 0,
     };
     // TODO: carregar posição/HP salvos do Supabase pelo player_id autenticado
