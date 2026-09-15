@@ -7,7 +7,9 @@ decide dano, cooldown nem posição; quem decide é o servidor, 20 vezes por
 segundo).
 
 > Estado atual: **Fase 1 — MVP "Ignara"** 🏗️ · fundação técnica e combate
-> autoritativo ✅ · ver etapas completas em [`docs/ROADMAP.md`](docs/ROADMAP.md)
+> autoritativo ✅ · **servidor em produção + demo web ao vivo abaixo 👇** ·
+> **23 testes verdes** · guard rails de servidor autoritativo (issue #18) ·
+> ver etapas completas em [`docs/ROADMAP.md`](docs/ROADMAP.md)
 
 ---
 
