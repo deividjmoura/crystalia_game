@@ -25,7 +25,24 @@ func _ready() -> void:
 		_spring.collision_mask = 1
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 
+var _look_touch := -1  # dedo comandando a câmera (touch mode)
+
 func _unhandled_input(event: InputEvent) -> void:
+	# Touch: arrasto na METADE DIREITA da tela gira a câmera (a esquerda é
+	# do joystick MobileControls). Em desktop o mouse continua capturado.
+	if event is InputEventScreenTouch:
+		var st := event as InputEventScreenTouch
+		if st.pressed:
+			var w := get_viewport().get_visible_rect().size.x
+			if st.position.x > w * 0.55 and _look_touch == -1:
+				_look_touch = st.index
+		elif st.index == _look_touch:
+			_look_touch = -1
+	elif event is InputEventScreenDrag:
+		var sd := event as InputEventScreenDrag
+		if sd.index == _look_touch:
+			_rotate_camera(sd.relative)
+			return
 	if event is InputEventMouseMotion and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
 		var motion := event as InputEventMouseMotion
 		_yaw -= motion.relative.x * mouse_sensitivity

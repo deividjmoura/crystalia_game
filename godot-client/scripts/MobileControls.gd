@@ -27,14 +27,19 @@ func _ready() -> void:
 	set_process(true)
 
 func _has_touchscreen() -> bool:
+	# Detecção em camadas (cada layer cobre um browser que esconde features):
+	if OS.has_feature("web_android") or OS.has_feature("web_ios"):
+		return true
 	if DisplayServer.has_feature(DisplayServer.FEATURE_TOUCHSCREEN):
 		return true
-	# Na build web o Godot reporta touchscreen só se o browser declarar;
-	# sniff extra pra navegadores que escondem a feature:
 	if OS.has_feature("web"):
 		var js = Engine.get_singleton("JavaScriptBridge")
 		if js:
-			var res = js.eval("'ontouchstart' in window || navigator.maxTouchPoints > 0")
+			# ?touch=1 força controles (debug; depois tiro daí se der)
+			var forced = js.eval("new URLSearchParams(location.search).has('touch')")
+			if forced == true:
+				return true
+			var res = js.eval("'ontouchstart' in window || navigator.maxTouchPoints > 0 || matchMedia('(pointer:coarse)').matches")
 			if res == true:
 				return true
 	return false
