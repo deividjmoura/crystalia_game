@@ -3,6 +3,10 @@ extends Node2D
 ## - o jogador local é o nó "LocalPlayer" da cena;
 ## - cada sessionId remoto vira um Player.tscn instanciado em código;
 ## - tudo é posicionado a partir do estado que o servidor envia.
+##
+## Visual 2026-09-15: greybox temático de Ignara (chão vulcânico +
+## marcadores de calor). Quando o tileset real chegar, substituímos o
+## ColorRect por TileMap mantendo as mesmas coordenadas.
 
 const PX_PER_UNIT := 32.0
 const PlayerScene := preload("res://scenes/Player.tscn")
@@ -16,6 +20,7 @@ var _demo_banner: Label
 
 func _ready() -> void:
 	_build_overlay()
+	_enhance_ignara_ground()
 
 	NetworkManager.player_state_updated.connect(_on_player_state)
 	NetworkManager.player_left.connect(_on_player_left)
@@ -28,6 +33,33 @@ func _ready() -> void:
 	# TODO: nome real depois do login (Supabase Auth). No navegador dá pra
 	# usar ?name=SeuNome na URL.
 	NetworkManager.connect_to_ignara("Aventureiro de Teste")
+
+func _enhance_ignara_ground() -> void:
+	# Melhora o ColorRect existente para transmitir “vulcão / calor”
+	var ground := get_node_or_null("Ground") as ColorRect
+	if ground:
+		ground.color = Color(0.18, 0.09, 0.06)  # solo basáltico quente
+
+	# Adiciona alguns “cristais de fogo” decorativos (placeholders)
+	_add_deco_crystal(Vector2(-180, -90), Color(1.0, 0.35, 0.1, 0.7))
+	_add_deco_crystal(Vector2(220, 70), Color(1.0, 0.5, 0.15, 0.65))
+	_add_deco_crystal(Vector2(-60, 140), Color(0.95, 0.25, 0.05, 0.6))
+	_add_deco_crystal(Vector2(140, -160), Color(1.0, 0.4, 0.12, 0.55))
+
+func _add_deco_crystal(pos: Vector2, col: Color) -> void:
+	var c := ColorRect.new()
+	c.size = Vector2(14, 22)
+	c.position = pos - c.size * 0.5
+	c.color = col
+	c.z_index = -2
+	add_child(c)
+	# Brilho sutil
+	var glow := ColorRect.new()
+	glow.size = Vector2(22, 30)
+	glow.position = pos - glow.size * 0.5
+	glow.color = Color(col.r, col.g, col.b, 0.18)
+	glow.z_index = -3
+	add_child(glow)
 
 func _on_player_state(session_id: String, state: Dictionary) -> void:
 	if session_id == NetworkManager.local_session_id:

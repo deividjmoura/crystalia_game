@@ -6,6 +6,10 @@ extends CharacterBody2D
 ## Só captura input (local) e exibe o estado autoritativo do servidor.
 ## Existe ainda o MODO DEMO offline (servidor inacessível no navegador):
 ## movimento autoritativo do próprio cliente, claramente sinalizado na tela.
+##
+## Visual (2026-09-15): greybox temático + preparo de sistema de auras.
+## Cores e modulate seguem docs/ART_DIRECTION.md. Sprites reais substituirão
+## o ColorRect quando os assets entrarem em assets/characters/.
 
 const PX_PER_UNIT := 32.0
 const MOVE_SPEED_UNITS := 4.0
@@ -13,6 +17,12 @@ const ENERGY_REGEN := 5.0
 const FOGO_RANGE := 2.6
 const WORLD_HALF_W := 20.0
 const WORLD_HALF_H := 11.0
+
+# Paleta oficial (ART_DIRECTION.md)
+const COLOR_IGNARA := Color(0.95, 0.30, 0.10)      # fogo local
+const COLOR_REMOTE := Color(0.25, 0.55, 0.75)      # aventureiro remoto (neutro-azulado)
+const COLOR_DEAD := Color(0.35, 0.35, 0.35, 0.45)
+const COLOR_FLASH_HIT := Color(1.0, 0.35, 0.35)
 
 @export var is_local_player: bool = true
 @export var interpolation_speed: float = 14.0
@@ -31,25 +41,35 @@ var max_energy := 100.0
 var alive := true
 var _flash := 0.0
 
-var _sprite: Sprite2D
+# Preparação para sistema de auras (issue #6)
+# Futuro: servidor manda lista de cristais; cliente aplica overlays.
+var natal_island: String = "ignara"
+var crystals: Array[String] = []          # ex.: ["ignara", "maren"]
+var active_aura: String = "ignara"        # aura dominante atual
+
+var _sprite: ColorRect
 var _name_label: Label
+var _aura_ring: ColorRect                 # anel visual simples de aura
 var _hud: CanvasLayer
 var _hp_label: Label
 var _energy_label: Label
-var _bob_t := 0.0
-var _last_x := 0.0
-
-const _SPRITE_BASE_Y := -32.0
 
 func _ready() -> void:
 	_sprite = $Sprite2D
-	_last_x = global_position.x
 	_name_label = Label.new()
-	_name_label.position = Vector2(-40, -82)
+	_name_label.position = Vector2(-40, -38)
 	_name_label.custom_minimum_size = Vector2(80, 0)
 	_name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_name_label.add_theme_font_size_override("font_size", 12)
 	add_child(_name_label)
+
+	# Anel de aura (placeholder visual até ter sprites)
+	_aura_ring = ColorRect.new()
+	_aura_ring.size = Vector2(36, 36)
+	_aura_ring.position = Vector2(-18, -18)
+	_aura_ring.color = Color(1, 0.4, 0.1, 0.25)
+	_aura_ring.z_index = -1
+	add_child(_aura_ring)
 
 	if is_local_player:
 		_build_hud()
@@ -59,9 +79,6 @@ func _physics_process(delta: float) -> void:
 	if not is_local_player:
 		global_position = global_position.lerp(_server_position, interpolation_speed * delta)
 		_update_visual_state(delta)
-		_update_motion_visuals(global_position.x - _last_x,
-			_server_position.distance_to(global_position) > 1.0, delta)
-		_last_x = global_position.x
 		return
 
 	var input_dir := Vector2(
@@ -77,7 +94,6 @@ func _physics_process(delta: float) -> void:
 		energy = min(max_energy, energy + ENERGY_REGEN * delta)
 		if Input.is_action_just_pressed("dom_fogo"):
 			_spawn_fire_effect()
-		_update_motion_visuals(input_dir.x, input_dir.length() > 0.0, delta)
 		_update_hud()
 		return
 
@@ -90,23 +106,6 @@ func _physics_process(delta: float) -> void:
 
 	global_position = global_position.lerp(_server_position, interpolation_speed * delta)
 	_update_visual_state(delta)
-	_update_motion_visuals(input_dir.x, input_dir.length() > 0.0, delta)
-
-# ------ visual do movimento: flip + flutuação quando se move (puro cosmético) ------
-func _update_motion_visuals(dir_x: float, moving: bool, delta: float) -> void:
-	if _sprite == null:
-		return
-	if dir_x > 0.01:
-		_sprite.flip_h = false
-	elif dir_x < -0.01:
-		_sprite.flip_h = true
-
-	if moving:
-		_bob_t += delta * 11.0
-		_sprite.position.y = _SPRITE_BASE_Y + sin(_bob_t) * 2.6
-	else:
-		_bob_t = 0.0
-		_sprite.position.y = lerpf(_sprite.position.y, _SPRITE_BASE_Y, 12.0 * delta)
 
 func configure(session: String, local: bool) -> void:
 	session_id = session
@@ -128,14 +127,39 @@ func apply_state(state: Dictionary) -> void:
 	if name_value != display_name:
 		display_name = name_value
 		_name_label.text = display_name
+
+	# Preparação para auras futuras (servidor ainda não manda, mas já lemos)
+	if state.has("natal_island"):
+		natal_island = String(state["natal_island"])
+	if state.has("crystals") and state["crystals"] is Array:
+		crystals = []
+		for c in state["crystals"]:
+			crystals.append(String(c))
+		_update_aura_from_crystals()
+
 	_update_hud()
+
+func _update_aura_from_crystals() -> void:
+	# Lógica simples de aura dominante (pode evoluir depois)
+	if crystals.is_empty():
+		active_aura = natal_island
+	else:
+		active_aura = crystals[-1]  # último coletado manda por enquanto
+	_apply_appearance()
 
 func _update_visual_state(delta: float) -> void:
 	_flash = max(0.0, _flash - delta)
 	if _flash > 0.0:
-		modulate = Color(1.0, 0.35, 0.35)
+		modulate = COLOR_FLASH_HIT
+	elif not alive:
+		modulate = COLOR_DEAD
 	else:
-		modulate = Color(1, 1, 1, 1.0 if alive else 0.3)
+		modulate = Color(1, 1, 1, 1)
+
+	# Pulsar suave no anel de aura (vida)
+	if _aura_ring and alive:
+		var pulse := 0.22 + 0.08 * sin(Time.get_ticks_msec() * 0.004)
+		_aura_ring.color.a = pulse
 
 func _spawn_fire_effect() -> void:
 	if energy < 20.0:
@@ -150,12 +174,37 @@ func _spawn_fire_effect() -> void:
 func _apply_appearance() -> void:
 	if not _has_sprite():
 		return
+
+	var base_color: Color
+	var aura_color: Color
+
 	if is_local_player:
-		_sprite.modulate = Color(1.08, 1.0, 0.92) # tom mais quente — você é o herói da lua
-		$AuraLight.color = Color(1.0, 0.55, 0.25)
+		base_color = COLOR_IGNARA
+		aura_color = Color(1.0, 0.45, 0.12, 0.28)
 	else:
-		_sprite.modulate = Color(0.72, 0.9, 1.1) # leve brisa: outros aventureiros
-		$AuraLight.color = Color(0.45, 0.8, 1.0)
+		base_color = COLOR_REMOTE
+		aura_color = Color(0.3, 0.6, 0.85, 0.22)
+
+	# Ajuste fino por aura ativa (quando o sistema de cristais chegar)
+	match active_aura:
+		"ignara":
+			base_color = COLOR_IGNARA if is_local_player else base_color
+			aura_color = Color(1.0, 0.4, 0.1, 0.3)
+		"maren":
+			base_color = Color(0.2, 0.55, 0.95)
+			aura_color = Color(0.3, 0.7, 1.0, 0.3)
+		"terrunha":
+			base_color = Color(0.25, 0.7, 0.3)
+			aura_color = Color(0.4, 0.85, 0.35, 0.28)
+		"zefira":
+			base_color = Color(0.55, 0.3, 0.9)
+			aura_color = Color(0.7, 0.45, 1.0, 0.28)
+		_:
+			pass
+
+	_sprite.color = base_color
+	if _aura_ring:
+		_aura_ring.color = aura_color
 	_name_label.text = display_name
 
 func _has_sprite() -> bool:
