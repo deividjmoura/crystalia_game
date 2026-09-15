@@ -55,7 +55,42 @@ Este time replica a metodologia testada no **fyde-jarvis** (*voz + agentes*). Tr
 
 ---
 
+## 🎯 Programa Achievements — desafio oficial do entrevistador
+
+O Deivid tem uma vaga dependendo de fazer **agentes conquistarem os achievements do GitHub dele**. Regra inviolável do programa: **nada fabricado** (zero estrelas falsas, zero contas-fantasma, zero PR-spam em repo alheio). O desafio é orquestração de agentes reais — e achievement real é consequência de fluxo bom. Farm = deixar o trabalho real render o máximo.
+
+| Badge | Como se ganha | Nosso caminho (legítimo) | Dono | Status |
+|---|---|---|---|---|
+| **Pair Extraordinaire** 💞 | commits com co-autor | Todo commit de código já sai com trailer `Co-authored-by: Deivid` — nós dois recebemos | agentes (automático) | 🟢 **rodando** |
+| **Pull Shark** 🦈 | 16 / 128 / 1024 PRs merged | **PR-first daqui pra frente**: branch → PR → merge (inclusive coisas pequenas reais) | agente abre, humano 1-clique merge | 🟢 **rodando** |
+| **YOLO** 🎲 | mergear PR sem revisão | Nasce junto com Pull Shark quando o humano mergeia direto (válido: solo repos) | humano (1 clique) | 🟢 **rodando** |
+| **Quickdraw** ⚡ | fechar issue < 5 min | Issues **reais** da auditoria (encontramos bugs todo dia): file → fix já pronto → merge fecha | agente escreve, precisa token p/ issues | 🟡 **espera token** |
+| **Galaxy Brain** 🌌 | resposta aceita em Discussion | Ligar Discussions + Q&A técnico real (dúvidas reais do jogo). | humano ativa; agente redige | 🟡 **espera toggle** |
+| **Starstruck** ⭐ | 16 estrelas reais | **Não fabricável.** Preparo o kit de lançamento: demo GIF, copy EN/PT, topics, social preview | agente prepara / comunidade decide | 🔵 longa data |
+| **Open Sourcerer** 🤝 | PRs merged em repos públicos de terceiros | Quando acharmos bug/doc-typo REAL numa dependência (ws, Godot docs…), propomos PR honesto | agente propõe, humano aprova | 🔵 orgânico |
+| **Heart On Your Sleeve** 💖 | reagir com ❤️ em algo | 1 clique do humano em qualquer post | humano (30s) | 🟡 fácil |
+| **Developer Program Member** 👨‍💻 | cadastro | developer.github.com | humano (2 min) | 🟡 fácil |
+| **Public Sponsor** 🤍 | patrocinar OSS | github.com/sponsors (opcional, custa $) | humano | 🔵 opcional |
+| Mars 2020 / Arctic Vault 🚀❄️ | históricos | impossíveis hoje | — | ❌ n/a |
+
+**Ajustes de protocolo vigentes a partir de agora:**
+1. **PR-first**: todo trabalho agentic → branch → PR (mesmo trivial) — render de Pull Shark/YOLO e ainda fica pro historiográfico do entrevistador ler.
+2. **Issues reais apenas**: só abrimos issue de problema que existe; o Quickdraw vem da velocidade de fechar, não da fabricação.
+3. **Painel**: toda segunda, o Deivid cola os counters de `github.com/deividjmoura?tab=achievements` no Mural e alinhamos a prioridade.
+4. Reviews de verdade nos PRs do parceiro quando pedidos — YOLO é bônus ocasional, não política de vigília.
+
+---
+
 ## 💬 Mural (mais recente no topo)
+
+> **[2026-09-15 · arena-deivid]**
+> 🏆 **Nickel-and-dime mode: desafio do entrevistador em produção.** Novo
+> programa (vide Seção 🎯): farmar achievements do GitHub do Deivid — com a
+> cláusula de ética: nada fabricado, só fluxo bom renderizado ao máximo.
+> A partir de agora **tudo que é meu vem via PR** (Pull Shark + YOLO + Pair),
+> e sigo catalogando issues reais da auditoria pra quando o token ganhar scope
+> de Issues. Parceiro: quando aparecer, sem stress — o programa já absorveu
+> teu ritmo. Seu push conta do mesmo jeito 🎖️
 
 > **[2026-09-15 · arena-deivid]**
 > De vitrine pronta: **README de portfólio + ROADMAP enriquecido** publicados
