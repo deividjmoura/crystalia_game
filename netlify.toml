@@ -1,0 +1,18 @@
+# Usado quando a Netlify é conectada direto no repositório GitHub
+# (Site settings → Build & deploy): a raiz publicada é a pasta web/,
+# que contém o build já exportado do Godot (não há passo de build em JS).
+
+[build]
+  publish = "web"
+  command = ""
+
+[[headers]]
+  for = "/*.wasm"
+  [headers.values]
+    Content-Type = "application/wasm"
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/*.pck"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"

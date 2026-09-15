@@ -1,0 +1,18 @@
+# Usado quando a pasta web/ é arrastada direto no Netlify Drop
+# (https://app.netlify.com/drop) — a pasta inteira vira a raiz do site.
+
+[build]
+  publish = "."
+
+# O jogo não usa threads (SharedArrayBuffer), então não precisa dos headers
+# COOP/COEP que complicam o deploy.
+[[headers]]
+  for = "/*.wasm"
+  [headers.values]
+    Content-Type = "application/wasm"
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/*.pck"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"

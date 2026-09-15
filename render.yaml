@@ -1,0 +1,24 @@
+# Blueprint da Render para o servidor autoritativo do Crystalia.
+# Render Dashboard → New → Blueprint → aponte para este repositório.
+# O servidor ainda não usa o Supabase em runtime (os TODOs estão no código),
+# então nenhuma env var é obrigatória para o teste de produção.
+services:
+  - type: web
+    name: crystalia-server
+    runtime: node
+    rootDir: server
+    plan: free
+    branch: main
+    buildCommand: npm install
+    startCommand: node src/index.js
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: NODE_VERSION
+        value: "20"
+      # Quando a persistência no Supabase for ligada (TODO em IgnaraRoom.js),
+      # preencha no dashboard da Render (marcadas como secretas lá):
+      # - key: SUPABASE_URL
+      #   sync: false
+      # - key: SUPABASE_SERVICE_ROLE_KEY
+      #   sync: false

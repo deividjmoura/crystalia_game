@@ -1,6 +1,5 @@
 # Godot
 godot-client/.godot/
-godot-client/export_presets.cfg
 godot-client/*.translation
 
 # Node / servidor
