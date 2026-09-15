@@ -1,6 +1,7 @@
-class_name World3D
+class_name IgnaraWorld3D
 extends Node3D
-## World3D — primeira sala 3D do Crystalia (POC 3ª pessoa).
+## IgnaraWorld3D — primeira sala 3D do Crystalia (POC 3ª pessoa).
+## (class_name evita colisão: World3D é classe nativa do Godot!)
 ##
 ## Showcase offline intencional: demo_mode ligado no LocalPlayer, sem rede.
 ## (O servidor continua autoritativo no mundo 2D; aqui validamos a câmera,
