@@ -5,6 +5,8 @@
 > **Referências oficiais**: as duas imagens fornecidas pelo `deivid-humano` em 2026-09-15:
 > 1. *Aura dos Cristais* (herói principal + evolução das auras)
 > 2. *Exemplos de Personagens* (Kael, Lyra, Sora, Bruna, Selene, Darius)
+>
+> **Responsável**: `grok-xai` (claim no AGENT_SYNC).
 
 ---
 
@@ -59,6 +61,12 @@ Isso significa:
 3. Overlays dos cristais coletados (podem misturar)
 4. Efeitos temporários (Dom ativo, dano, buff)
 
+### Implementação atual (código)
+- `Player.gd` já lê `natal_island` e `crystals` do estado do servidor (quando existirem).
+- Existe um anel de aura (`ColorRect`) que pulsa e muda de cor conforme `active_aura`.
+- Cores de base e aura seguem a tabela acima.
+- Quando sprites reais entrarem em `assets/characters/`, o ColorRect será substituído por `AnimatedSprite2D` + overlays.
+
 ---
 
 ## 4. Personagens / skins
@@ -80,6 +88,11 @@ Isso significa:
 - Cores da roupa + aura devem reforçar o elemento natal (mas auras de cristais coletados podem sobrescrever parcialmente).
 - Nome + barra de HP/energia ficam acima do personagem (já implementado).
 
+### Estado atual (2026-09-15)
+- Greybox temático: `ColorRect` com cores de Ignara (local) e azul-remoto.
+- Anel de aura pulsante preparado para o sistema de cristais.
+- Estrutura de pastas criada em `godot-client/assets/`.
+- Próximo passo natural: sprites reais + AnimatedSprite2D (issue #6).
 ### Estado atual (greybox)
 - `Player.tscn` usa `ColorRect` (laranja local / ciano remoto).
 - Próximo passo: ver issue #6.
@@ -100,16 +113,38 @@ Isso significa:
 - Preferir `TileMap` / `TileMapLayer` em vez de ColorRect sólido.
 - Camadas sugeridas: ground → decoration → collision → overlay animado.
 - Iluminação leve (`CanvasModulate` ou PointLight2D) para reforçar o mood.
-- Estado atual: ColorRect marrom em `World.tscn` (ok como greybox).
+
+### Estado atual (2026-09-15)
+- Chão de Ignara com cor vulcânica (`#2E170F` approx).
+- Cristais decorativos de fogo espalhados (placeholders ColorRect).
+- Pronto para receber tileset real em `assets/tiles/ignara/`.
 
 ---
 
-## 6. Estrutura de pastas recomendada
+## 6. Estrutura de pastas (recomendada; esqueleto já criado)
+
+- Estado atual do greybox: ColorRect marrom em `World.tscn` (ok como placeholder, pronto pro tileset).
 
 ```
 godot-client/
 └── assets/
     ├── characters/
+    │   ├── base/
+    │   ├── auras/
+    │   │   ├── ignara/
+    │   │   ├── maren/
+    │   │   ├── terrunha/
+    │   │   ├── zefira/
+    │   │   └── legendary/
+    │   └── classes/
+    ├── tiles/
+    │   └── ignara/
+    └── effects/
+        └── fire/
+```
+
+Ver `godot-client/assets/README.md`.
+
     │   ├── base/           # skins sem aura
     │   ├── auras/          # overlays por cristal
     │   └── classes/        # Kael, Lyra, Sora… (futuro)
@@ -146,4 +181,5 @@ godot-client/
 
 ---
 
+*Criado e mantido por `grok-xai` a partir das imagens de referência e do estado do cliente.*
 *Criado por `grok-xai` em 2026-09-15 a partir das imagens de referência e do estado actual do cliente.*
