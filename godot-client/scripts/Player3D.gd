@@ -18,6 +18,9 @@ var demo_mode: bool = false
 
 # Estado autoritativo (servidor) — plano XZ mapeado para 3D
 var _server_pos := Vector3.ZERO
+# Só corrige a posição DEPOIS do 1º estado real do servidor.
+# Sem isso, offline/POC o player faz lerp para a origem ("coleira" ~0,5 m do spawn).
+var _has_server_state := false
 var _last_input := Vector2.ZERO
 
 var hp := 100.0
@@ -31,6 +34,7 @@ var _name_label: Label3D
 var _avatar: Node3D
 
 func _ready() -> void:
+	_server_pos = global_position  # nasce no spawn, não na origem (0,0,0)
 	_camera_ctrl = get_node_or_null("CameraController") as CameraController
 	_build_avatar()
 	_build_name_label()
@@ -92,8 +96,10 @@ func _physics_process(delta: float) -> void:
 
 	move_and_slide()
 
-	# Interpola em direção ao servidor para não divergir
-	global_position = global_position.lerp(_server_pos, 0.15)
+	# Interpola em direção ao servidor para não divergir — apenas após o 1º
+	# estado real recebido; sem rede (POC/demo offline) não puxa para a origem.
+	if _has_server_state:
+		global_position = global_position.lerp(_server_pos, 0.15)
 
 func _demo_move(delta: float) -> void:
 	var input_dir := Vector2(
@@ -120,6 +126,7 @@ func configure(session: String, local: bool) -> void:
 		_camera_ctrl = null
 
 func apply_state(state: Dictionary) -> void:
+	_has_server_state = true
 	hp = float(state.get("hp", hp))
 	max_hp = float(state.get("maxHp", max_hp))
 	energy = float(state.get("energy", energy))
