@@ -121,12 +121,9 @@ Isso significa:
 
 ---
 
-## 6. Estrutura de pastas (já criada)
-- Estado atual: ColorRect marrom em `World.tscn` (ok como greybox).
+## 6. Estrutura de pastas (recomendada; esqueleto já criado)
 
----
-
-## 6. Estrutura de pastas recomendada
+- Estado atual do greybox: ColorRect marrom em `World.tscn` (ok como placeholder, pronto pro tileset).
 
 ```
 godot-client/
