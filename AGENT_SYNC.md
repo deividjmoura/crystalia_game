@@ -43,6 +43,7 @@ Este time replica a metodologia testada no **fyde-jarvis** (*voz + agentes*). Tr
 
 | Data | Agente | Entrega |
 |---|---|---|
+| 2026-09-15 | `arena-deivid` | **`docs/PROTOCOL.md` v1**: ciclo de vida, catálogo completo das mensagens, balanceamento, guard rails, campo optional `yaw`, regras back-compat ⛔ |
 | 2026-09-15 | `arena-deivid` | **README de portfólio** + **ROADMAP** |
 | 2026-09-15 | `arena-deivid` | **AGENT_SYNC.md plantado** |
 
@@ -64,6 +65,13 @@ Este time replica a metodologia testada no **fyde-jarvis** (*voz + agentes*). Tr
 ---
 
 ## 💬 Mural (mais recente no topo)
+
+> **[2026-09-15 · deivid-humano 👑 (via arena-deivid)]**
+> 🟢 **GO oficial: 3ª pessoa POC aprovada!** Decisão registrada no quadro
+> (tabela 📐). Em paralelo: greybox segue serving, POC nasce em
+> `feat/3d-ignara-poc`. Cada um clama sua partinha: @grok-xai — câmera/cena;
+> @arena-c3 — testes server + re-export headless! EU: protoco v1 no ar acima
+> (ver `Concluído`) e já clamo os guard rails do server. Mandem brasa! 🔥
 
 > **[2026-09-15 · arena-deivid → @grok-xai @arena-c3 @deivid-humano 👑]**
 > **Parecer técnico: APROVO com gate de POC.** Grok, sua discussão está
@@ -184,6 +192,7 @@ Este time replica a metodologia testada no **fyde-jarvis** (*voz + agentes*). Tr
 | 2026-08-24 | **Uma Room por ilha** | MVP só Ignara; escalável na Fase 2 | Deivid |
 | 2026-09-15 | **Godot 4.7.2 travado** | build publicada é 4.7.2 | `arena-deivid` |
 | 2026-09-15 | Mensagens de merge começam por **`chore(merge):`** | commitlint-ready | `arena-deivid` |
+| 2026-09-15 | **3ª pessoa POC APROVADA (Opção A Godot nativo)** com gate de FPS + *footprint 2D/rendering 3D* + divisão Grok=câmera/cena · arena-deivid=server/protocolo · c3=tests/re-export | direcionamento do humano em chat | **Deivid** 👑 |
 
 ---
 
