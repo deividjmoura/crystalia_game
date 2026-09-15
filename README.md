@@ -23,30 +23,33 @@ _muda a sua.)_
 
 ---
 
-## 🧪 Demo ao vivo
+## 🎮 Demo ao vivo — jogue agora
 
-- **Jogo (Web, Netlify):** _publicação em andamento — a pasta `web/` já tem o
-  build Godot 4.7.2 pronto; ligue o site seguindo [`docs/DEPLOY.md`](docs/DEPLOY.md)_
-- **Servidor (Render):** blueprint em [`render.yaml`](render.yaml), com
-  health-check em `/health`.
+**→ [admirable-raindrop-103ea1.netlify.app](https://admirable-raindrop-103ea1.netlify.app/?name=Crystal)**
+_(troque `?name=Crystal` pelo seu nome de aventureiro!)_
 
-> 🔁 O jogo **reconecta sozinho (12 tentativas)** contra o cold-start do plano
-> free e, se o servidor não responder em ~1 min, cai no **MODO DEMO local** —
-> dá pra demonstrar a ilha e o Dom de Fogo sem backend nenhum.
+- 🤝 **Multiplayer real**: abra duas abas com nomes diferentes e veja os
+  personagens aparecerem um para o outro em tempo real (servidor autoritativo
+  na Render — `wss://crystalia-server.onrender.com`).
+- 🔌 Se o servidor estiver cochilando no free tier, o jogo **reconecta sozinho
+  (12 tentativas ~1 min)** e, sem resposta, cai no **MODO DEMO local** — a ilha
+  abre offline esperando você.
+
+> Deploy contínuo ligado: o site atualiza sozinho a cada push na main
+> (Netlify ↔ GitHub). Para trocar o servidor alvo em produção: `web/config.js`,
+> sem re-export! Detalhes em [`docs/DEPLOY.md`](docs/DEPLOY.md).
 
 ---
 
-## 🕹️ Como jogar agora
+## 🕹️ Como jogar
 
-- **Site demo**: _seguindo o deploy em [`docs/DEPLOY.md`](docs/DEPLOY.md)_
-- WASD mover **·** Espaço = Dom de Fogo (cooldown/custo decididos pelo servidor)
-- Entre em duas abas e veja o multiplayer espelhar os personagens em tempo real
-- Se o servidor estiver cochilando (free tier), o **MODO DEMO** te recebe com a
-  ilha inteira desenhada — e devolve o multiplayer quando ele acorda.
+- **WASD** mover **·** **ESPAÇO** = Dom de Fogo (cooldown/custo pelo servidor)
+- Duas abas ao mesmo tempo = ver multiplayer espelhando em tempo real 🪞
+- Sem servidor? O **MODO DEMO** te recebe com a ilha inteira desenhada —
+  e devolve o multiplayer quando ele acorda.
 
-> Para devs/agentes que vão rodar local: tudo em **docs/DEPLOY.md** e nas
-> regras do [AGENT_SYNC.md](AGENT_SYNC.md). Não temos aqui instruções de
-> instalação por escolha de design da vitrine 😉
+> Devs/agentes: instruções completas de run em **docs/DEPLOY.md** e as regras
+> do time em [AGENT_SYNC.md](AGENT_SYNC.md). O README aqui é vitrine 😉
 
 ---
 
