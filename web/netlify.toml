@@ -16,3 +16,10 @@
   for = "/*.pck"
   [headers.values]
     Cache-Control = "public, max-age=31536000, immutable"
+
+# Vídeos da intro: nomes FIXOS (intro-1/2) → sempre revalidar (regra do projeto
+# para nomes que não mudam; immutable só para bundles versionados crystalia-vN).
+[[headers]]
+  for = "/videos/*"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"

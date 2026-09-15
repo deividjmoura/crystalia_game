@@ -231,6 +231,18 @@ func _build_avatar() -> void:
 		piece.rotation.z = -0.16  # anguladinha cansada antes eroi
 		_avatar.add_child(piece)
 
+	# Colisão do corpo (cápsula) — filha do CharacterBody3D, NÃO do _avatar
+	# (o avatar gira com o movimento; a cápsula deve ficar quieta).
+	# SEM ela o player atravessa o chão e cai eternamente — foi o que
+	# aconteceu quando este bloco ficou preso depois do `return` de _mat().
+	var col := CollisionShape3D.new()
+	var shape := CapsuleShape3D.new()
+	shape.radius = 0.28
+	shape.height = 1.1
+	col.shape = shape
+	col.position.y = 0.9
+	add_child(col)
+
 func _box(size: Vector3, pos: Vector3, color: Color) -> MeshInstance3D:
 	var m := MeshInstance3D.new()
 	var b := BoxMesh.new()
@@ -266,15 +278,6 @@ func _mat(color: Color) -> StandardMaterial3D:
 	mm.albedo_color = color
 	mm.roughness = 0.72
 	return mm
-
-	# Colisão
-	var col := CollisionShape3D.new()
-	var shape := CapsuleShape3D.new()
-	shape.radius = 0.28
-	shape.height = 1.1
-	col.shape = shape
-	col.position.y = 0.9
-	add_child(col)
 
 func _build_name_label() -> void:
 	_name_label = Label3D.new()

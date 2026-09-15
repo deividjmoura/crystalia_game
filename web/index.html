@@ -111,7 +111,10 @@ body {
 #intro-brand p { margin: .5em 0 0; font-size: clamp(12px, 2.4vw, 15px); color: #e0b190;
   text-shadow: 0 1px 2px #000; }
 </style>
-</head>
+
+<!-- crystalia-intro:v1 -->
+<link rel="stylesheet" href="intro/intro.css">
+	</head>
 	<body>
 		<canvas id="canvas">
 			Your browser does not support the canvas tag.
@@ -235,6 +238,17 @@ const engine = new Engine(GODOT_CONFIG);
 	}
 }());
 		</script>
+	
+		<div id="crystalia-intro" aria-label="Abertura de Crystalia">
+			<video id="ci-video" playsinline preload="auto" disablepictureinpicture></video>
+			<button id="ci-play" type="button" aria-label="Tocar abertura de Crystalia">🔥 <span>Entrar em Crystalia</span></button>
+			<div id="ci-bottombar">
+				<span id="ci-status">preparando Ignara…</span>
+				<span id="ci-dots"><i class="on"></i><i></i></span>
+				<button id="ci-skip" type="button">Pular intro ⏩</button>
+			</div>
+		</div>
+		<script src="intro/intro.js" defer></script>
 	</body>
 </html>
 
