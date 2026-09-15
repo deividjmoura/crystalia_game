@@ -1,6 +1,8 @@
-[gd_scene load_steps=5 format=3]
+[gd_scene load_steps=7 format=3]
 
 [ext_resource type="PackedScene" path="res://scenes/Player3D.tscn" id="1"]
+[ext_resource type="Script" path="res://scripts/World3D.gd" id="2"]
+[ext_resource type="PackedScene" path="res://scenes/NPC3D.tscn" id="3"]
 
 [sub_resource type="BoxMesh" id="BoxMesh_ground"]
 size = Vector3(40, 0.5, 40)
@@ -13,6 +15,7 @@ albedo_color = Color(0.18, 0.09, 0.06, 1)
 roughness = 0.9
 
 [node name="World3D" type="Node3D"]
+script = ExtResource("2")
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
 transform = Transform3D(0.866, -0.354, 0.354, 0, 0.707, 0.707, -0.5, -0.612, 0.612, 0, 8, 0)
@@ -32,3 +35,6 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
 
 [node name="LocalPlayer" parent="." instance=ExtResource("1")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+
+[node name="TomrikQuest" parent="." instance=ExtResource("3")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -6)
