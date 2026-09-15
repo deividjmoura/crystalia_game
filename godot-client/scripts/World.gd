@@ -22,6 +22,11 @@ func _ready() -> void:
 	_build_overlay()
 	_enhance_ignara_ground()
 
+	# Controles de toque (mobile): só VISÍVEIS em aparelhos com touchscreen.
+	# Injetam as mesmas ações do Input Map do teclado (ver MobileControls.gd).
+	var mobile_controls := preload("res://scripts/MobileControls.gd").new()
+	add_child(mobile_controls)
+
 	NetworkManager.player_state_updated.connect(_on_player_state)
 	NetworkManager.player_left.connect(_on_player_left)
 	NetworkManager.dom_fogo_cast.connect(_on_dom_fogo)

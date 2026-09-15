@@ -6,13 +6,30 @@
   publish = "web"
   command = ""
 
+# Cache policy: NUNCA "immutable" aqui — os nomes de arquivo do export Godot
+# (index.wasm/pck/js) não mudam entre builds, então um cache eterno trava o
+# browser do jogador numa versão velha do jogo (bug real de 2026-09-15: site
+# deployado servindo perfeitamente e o Chrome continuava mostrando quadrados).
+# Estratégia: revalidar SEMPRE; a Netlify responde 304 com ETag quando o
+# conteúdo não mudou — zero custo de banda no resto do tempo.
+
 [[headers]]
   for = "/*.wasm"
   [headers.values]
     Content-Type = "application/wasm"
-    Cache-Control = "public, max-age=31536000, immutable"
+    Cache-Control = "public, max-age=0, must-revalidate"
 
 [[headers]]
   for = "/*.pck"
   [headers.values]
-    Cache-Control = "public, max-age=31536000, immutable"
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+[[headers]]
+  for = "/*.js"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+[[headers]]
+  for = "/index.html"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"

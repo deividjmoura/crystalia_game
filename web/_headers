@@ -1,0 +1,17 @@
+# Headers Netlify aplicados por caminho — canônico para sites sem build.
+# Regra: NUNCA cachear permanentemente (nossos arquivos têm nomes fixos;
+# bug real: Chrome servia quadrados com a build nova já deployada).
+# Estratégia: sempre revalidar; 304 via ETag quando nada muda.
+
+/*.wasm
+  Content-Type: application/wasm
+  Cache-Control: public, max-age=0, must-revalidate
+
+/*.pck
+  Cache-Control: public, max-age=0, must-revalidate
+
+/*.js
+  Cache-Control: public, max-age=0, must-revalidate
+
+/index.html
+  Cache-Control: public, max-age=0, must-revalidate

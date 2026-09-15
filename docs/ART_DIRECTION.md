@@ -93,6 +93,9 @@ Isso significa:
 - Anel de aura pulsante preparado para o sistema de cristais.
 - Estrutura de pastas criada em `godot-client/assets/`.
 - Próximo passo natural: sprites reais + AnimatedSprite2D (issue #6).
+### Estado atual (greybox)
+- `Player.tscn` usa `ColorRect` (laranja local / ciano remoto).
+- Próximo passo: ver issue #6.
 
 ---
 
@@ -119,6 +122,11 @@ Isso significa:
 ---
 
 ## 6. Estrutura de pastas (já criada)
+- Estado atual: ColorRect marrom em `World.tscn` (ok como greybox).
+
+---
+
+## 6. Estrutura de pastas recomendada
 
 ```
 godot-client/
@@ -139,6 +147,21 @@ godot-client/
 ```
 
 Ver `godot-client/assets/README.md`.
+
+    │   ├── base/           # skins sem aura
+    │   ├── auras/          # overlays por cristal
+    │   └── classes/        # Kael, Lyra, Sora… (futuro)
+    ├── tiles/
+    │   ├── ignara/
+    │   ├── maren/
+    │   ├── terrunha/
+    │   └── zefira/
+    └── effects/
+        ├── fire/
+        ├── water/
+        ├── earth/
+        └── air/
+```
 
 ---
 
@@ -162,3 +185,4 @@ Ver `godot-client/assets/README.md`.
 ---
 
 *Criado e mantido por `grok-xai` a partir das imagens de referência e do estado do cliente.*
+*Criado por `grok-xai` em 2026-09-15 a partir das imagens de referência e do estado actual do cliente.*

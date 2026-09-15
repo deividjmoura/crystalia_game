@@ -15,6 +15,10 @@ const FOGO_RANGE = 2.6; // unidades de mundo (cada unidade = 32px no cliente)
 const FOGO_DAMAGE = 25;
 const RESPAWN_MS = 3000;
 
+// --- Guard rails anti-abuso (validados no servidor, nunca pelo cliente) ---
+const MSG_RATE_LIMIT = 60; // mensagens por segundo por conexão
+const STRIKE_LIMIT = 3; // janelas consecutivas de excesso até kick (close 1008)
+
 class IgnaraRoom {
   // `options` existe para os testes (node:test) — em produção o construtor
   // é chamado sem argumentos e usa os valores/relógio reais. A autoridade
@@ -22,6 +26,8 @@ class IgnaraRoom {
   constructor(options = {}) {
     this.players = new Map(); // sessionId -> player
     this.inputs = new Map(); // sessionId -> { dx, dy }
+    this._msgWindows = new Map(); // sessionId -> { start, count }  (rate-limit)
+    this._strikes = new Map(); // sessionId -> strikes consecutivos de flood
     this._nextId = 1;
 
     this._now = options.now || Date.now;
@@ -47,6 +53,25 @@ class IgnaraRoom {
   }
 
   join(ws, displayName) {
+    const cleanName =
+      String(displayName ?? "").trim().slice(0, 20) || "Aventureiro";
+
+    // Guard rail 0 (anti-fantasma): o mesmo nome em duas sessões ativas é
+    // prova quase certa de reconexão (reload / segunda aba). A nova assume —
+    // a velha é desconectada e sai do mundo (issue #18).
+    const ghostIds = [];
+    for (const [oldId, old] of this.players) {
+      if (old.displayName.toLowerCase() === cleanName.toLowerCase()) {
+        this._send(old.ws, { type: "kicked", reason: "reconnected_elsewhere" });
+        try { old.ws.close(1000, "reconnected_elsewhere"); } catch { /* fake ws */ }
+        this.players.delete(oldId);
+        this.inputs.delete(oldId);
+        this._msgWindows.delete(oldId);
+        this._strikes.delete(oldId);
+        ghostIds.push(oldId);
+      }
+    }
+
     const sessionId = `p${this._nextId++}`;
     const player = {
       ws,
@@ -58,13 +83,19 @@ class IgnaraRoom {
       maxEnergy: 100,
       alive: true,
       // trim antes do fallback: "   " (truthy) não pode virar o nome exibido.
-      displayName: String(displayName ?? "").trim().slice(0, 20) || "Aventureiro",
+      displayName: cleanName,
       lastFogoAt: 0,
     };
     // TODO: carregar posição/HP salvos do Supabase pelo player_id autenticado
     this.players.set(sessionId, player);
     this.inputs.set(sessionId, { dx: 0, dy: 0 });
     this._send(ws, { type: "welcome", sessionId });
+    // player_left do fantasma trafega DEPOIS do welcome — até o próprio
+    // novo recebe (killer guard: remove o sprite antigo se a aba velha ainda
+    // estiver renderizando ele por algum motivo de cache/arrival order).
+    for (const ghostId of ghostIds) {
+      this._broadcast({ type: "player_left", sessionId: ghostId });
+    }
     return sessionId;
   }
 
@@ -72,11 +103,42 @@ class IgnaraRoom {
     if (!this.players.has(sessionId)) return;
     this.players.delete(sessionId);
     this.inputs.delete(sessionId);
+    this._msgWindows.delete(sessionId);
+    this._strikes.delete(sessionId);
     this._broadcast({ type: "player_left", sessionId });
     // TODO: persistir estado final do jogador no Supabase
   }
 
   handleMessage(sessionId, raw) {
+    // Guard rail 1 (rate-limit): janela de 1s. Passou limpo → strikes zeram.
+    // Flood repetido → 3 janelas seguidas = kick (protocol-level, sem mute).
+    const now = this._now();
+    let win = this._msgWindows.get(sessionId);
+    if (!win || now - win.start >= 1000) {
+      // Zera strikes só se a janela ANTERIOR respeitou o limite — 3 floods
+      // seguidos não se perdoam (pegado pelos testes em guardrails.test.js).
+      if (win && win.count <= MSG_RATE_LIMIT) this._strikes.set(sessionId, 0);
+      win = { start: now, count: 0 };
+      this._msgWindows.set(sessionId, win);
+    }
+    win.count++;
+    if (win.count > MSG_RATE_LIMIT) {
+      const strikes = (this._strikes.get(sessionId) || 0) + 1;
+      this._strikes.set(sessionId, strikes);
+      const name = this.players.get(sessionId)?.displayName ?? sessionId;
+      console.warn(
+        `[guard-rail] rate-limit: ${sessionId} (${name}) mandou ${win.count} msg/s ` +
+        `(limite ${MSG_RATE_LIMIT}) — strike ${strikes}/${STRIKE_LIMIT}`
+      );
+      if (strikes >= STRIKE_LIMIT && this.players.has(sessionId)) {
+        const p = this.players.get(sessionId);
+        this._send(p.ws, { type: "kicked", reason: "message_flood" });
+        try { p.ws.close(1008, "message_flood"); } catch { /* fake ws */ }
+        this.leave(sessionId);
+      }
+      return;
+    }
+
     let msg;
     try {
       msg = JSON.parse(raw);
