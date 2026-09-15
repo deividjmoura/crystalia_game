@@ -11,6 +11,18 @@ segundo).
 
 ---
 
+## 🎨 Conceitos do mundo
+
+![Crystalia — Aura dos Cristais](docs/assets/concept-aura-cristais.png)
+
+![Crystalia — exemplos de personagens](docs/assets/concept-personagens.png)
+
+_(Arte conceitual — o MVP de verdade hoje usa sprites desenhados por IA já_
+_plugados na ilha de Ignara. Cada cristal desperta uma aura; cada escolha_
+_muda a sua.)_
+
+---
+
 ## 🧪 Demo ao vivo
 
 - **Jogo (Web, Netlify):** _publicação em andamento — a pasta `web/` já tem o
@@ -24,25 +36,17 @@ segundo).
 
 ---
 
-## ⚡ Rodando local em 5 minutos
+## 🕹️ Como jogar agora
 
-### 1. Servidor autoritativo (Node 20+)
+- **Site demo**: _seguindo o deploy em [`docs/DEPLOY.md`](docs/DEPLOY.md)_
+- WASD mover **·** Espaço = Dom de Fogo (cooldown/custo decididos pelo servidor)
+- Entre em duas abas e veja o multiplayer espelhar os personagens em tempo real
+- Se o servidor estiver cochilando (free tier), o **MODO DEMO** te recebe com a
+  ilha inteira desenhada — e devolve o multiplayer quando ele acorda.
 
-```bash
-cd server
-npm install
-npm run dev        # sobe em ws://127.0.0.1:2567 com /health
-```
-
-### 2. Cliente (Godot **4.7.2** — versão travada em `godot-client/project.godot`)
-
-1. Abra o Godot **4.7.2**, importe `godot-client/project.godot`
-2. Play ▶ — o `NetworkManager` tenta ligar no servidor local e, sem ele, entra
-   em modo demo.
-
-Quer apontar para outro servidor? `WebBridge` lê em runtime: barra final
-`?server=wss://seu-servidor` na URL do jogo, ou edite `web/config.js` no
-deploy (sem precisar re-exportar o jogo!).
+> Para devs/agentes que vão rodar local: tudo em **docs/DEPLOY.md** e nas
+> regras do [AGENT_SYNC.md](AGENT_SYNC.md). Não temos aqui instruções de
+> instalação por escolha de design da vitrine 😉
 
 ---
 

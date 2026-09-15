@@ -31,16 +31,21 @@ var max_energy := 100.0
 var alive := true
 var _flash := 0.0
 
-var _sprite: ColorRect
+var _sprite: Sprite2D
 var _name_label: Label
 var _hud: CanvasLayer
 var _hp_label: Label
 var _energy_label: Label
+var _bob_t := 0.0
+var _last_x := 0.0
+
+const _SPRITE_BASE_Y := -32.0
 
 func _ready() -> void:
 	_sprite = $Sprite2D
+	_last_x = global_position.x
 	_name_label = Label.new()
-	_name_label.position = Vector2(-40, -34)
+	_name_label.position = Vector2(-40, -82)
 	_name_label.custom_minimum_size = Vector2(80, 0)
 	_name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_name_label.add_theme_font_size_override("font_size", 12)
@@ -54,6 +59,9 @@ func _physics_process(delta: float) -> void:
 	if not is_local_player:
 		global_position = global_position.lerp(_server_position, interpolation_speed * delta)
 		_update_visual_state(delta)
+		_update_motion_visuals(global_position.x - _last_x,
+			_server_position.distance_to(global_position) > 1.0, delta)
+		_last_x = global_position.x
 		return
 
 	var input_dir := Vector2(
@@ -69,6 +77,7 @@ func _physics_process(delta: float) -> void:
 		energy = min(max_energy, energy + ENERGY_REGEN * delta)
 		if Input.is_action_just_pressed("dom_fogo"):
 			_spawn_fire_effect()
+		_update_motion_visuals(input_dir.x, input_dir.length() > 0.0, delta)
 		_update_hud()
 		return
 
@@ -81,6 +90,23 @@ func _physics_process(delta: float) -> void:
 
 	global_position = global_position.lerp(_server_position, interpolation_speed * delta)
 	_update_visual_state(delta)
+	_update_motion_visuals(input_dir.x, input_dir.length() > 0.0, delta)
+
+# ------ visual do movimento: flip + flutuação quando se move (puro cosmético) ------
+func _update_motion_visuals(dir_x: float, moving: bool, delta: float) -> void:
+	if _sprite == null:
+		return
+	if dir_x > 0.01:
+		_sprite.flip_h = false
+	elif dir_x < -0.01:
+		_sprite.flip_h = true
+
+	if moving:
+		_bob_t += delta * 11.0
+		_sprite.position.y = _SPRITE_BASE_Y + sin(_bob_t) * 2.6
+	else:
+		_bob_t = 0.0
+		_sprite.position.y = lerpf(_sprite.position.y, _SPRITE_BASE_Y, 12.0 * delta)
 
 func configure(session: String, local: bool) -> void:
 	session_id = session
@@ -124,12 +150,12 @@ func _spawn_fire_effect() -> void:
 func _apply_appearance() -> void:
 	if not _has_sprite():
 		return
-	var cor: Color
 	if is_local_player:
-		cor = Color(0.95, 0.4, 0.15) # laranja de fogo
+		_sprite.modulate = Color(1.08, 1.0, 0.92) # tom mais quente — você é o herói da lua
+		$AuraLight.color = Color(1.0, 0.55, 0.25)
 	else:
-		cor = Color(0.2, 0.78, 0.78) # azul-petróleo (outros aventureiros)
-	_sprite.color = cor
+		_sprite.modulate = Color(0.72, 0.9, 1.1) # leve brisa: outros aventureiros
+		$AuraLight.color = Color(0.45, 0.8, 1.0)
 	_name_label.text = display_name
 
 func _has_sprite() -> bool:

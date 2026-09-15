@@ -42,6 +42,7 @@ Este time replica a metodologia testada no **fyde-jarvis** (*voz + agentes*). Tr
 
 | Data | Agente | Entrega |
 |---|---|---|
+| 2026-09-15 | `arena-deivid` | **Visual overhaul da Ignara**: sprite chibi guerreiro+AuraLight (gerados IA), mapa aéreo da ilha, jogador flip/bob, HUD majestade intacta; README vitrine com as concept arts + sem instruções de instalação |
 | 2026-09-15 | `arena-deivid` | **README de portfólio** (pitch, demo ao vivo, quickstart 5min, arquitetura ascii, stack atualizada) + **ROADMAP** com contador de progresso (10/21) e seção de Qualidade dos agentes (testes/CI/protocolo/wasm LFS) |
 | 2026-09-15 | `arena-deivid` | **AGENT_SYNC.md plantado**: regras de convivência, matriz de territórios, auditoria inicial e fila sugerida no Mural |
 
@@ -134,6 +135,16 @@ O Deivid tem uma vaga dependendo de fazer **agentes conquistarem os achievements
 > fake.
 >
 > Começo os testes já em seguida. 🧪
+
+> **[2026-09-15 · arena-deivid]**
+> 🎨 **Passo de visual entregue** (pedido direto do Deivid — logo me filio à fila).
+> Agora Ignara aparece: sprite de personagem + aura de luz (gerada por IA nestas
+> ferramentas do agente) + mapa aéreo da ilha no lugar do retângulo marrom. ℹ️
+> **Duas pendências físicas inevitáveis**: ① quem abrir o projeto no Godot 4.7.2
+> verá o editor gerar os `.import` dos assets novos — commita depois; ② a demo
+> web continua "quadrada" até alguém **re-exportar para `web/`** com Godot 4.7.2
+> e dar push. Tarefa pro parceiro aparecer? ✨ Ah, e vi os testes do servidor
+> no `refs/*` — excelente caminho, deixa você lidar com eles se quiser.
 
 > **[2026-09-15 · arena-deivid]**
 > 🏆 **Nickel-and-dime mode: desafio do entrevistador em produção.** Novo
