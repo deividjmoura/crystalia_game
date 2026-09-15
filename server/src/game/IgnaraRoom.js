@@ -16,12 +16,34 @@ const FOGO_DAMAGE = 25;
 const RESPAWN_MS = 3000;
 
 class IgnaraRoom {
-  constructor() {
+  // `options` existe para os testes (node:test) — em produção o construtor
+  // é chamado sem argumentos e usa os valores/relógio reais. A autoridade
+  // continua 100% no servidor; só trocamos COMO lemos o relógio.
+  constructor(options = {}) {
     this.players = new Map(); // sessionId -> player
     this.inputs = new Map(); // sessionId -> { dx, dy }
     this._nextId = 1;
 
-    this.tickInterval = setInterval(() => this._fixedTick(1 / TICK_RATE), 1000 / TICK_RATE);
+    this._now = options.now || Date.now;
+    this._respawnMs = options.respawnMs ?? RESPAWN_MS;
+    this._respawnTimers = new Set();
+    const tickRate = options.tickRate ?? TICK_RATE;
+    this._autoTick = options.autoTick !== false;
+
+    if (this._autoTick) {
+      this.tickInterval = setInterval(
+        () => this._fixedTick(1 / tickRate),
+        1000 / tickRate
+      );
+    }
+  }
+
+  /** Para o tick periódico e respawns pendentes (shutdown / fim de teste). */
+  destroy() {
+    if (this.tickInterval) clearInterval(this.tickInterval);
+    this.tickInterval = null;
+    for (const timer of this._respawnTimers) clearTimeout(timer);
+    this._respawnTimers.clear();
   }
 
   join(ws, displayName) {
@@ -35,7 +57,8 @@ class IgnaraRoom {
       energy: 100,
       maxEnergy: 100,
       alive: true,
-      displayName: String(displayName || "Aventureiro").slice(0, 20),
+      // trim antes do fallback: "   " (truthy) não pode virar o nome exibido.
+      displayName: String(displayName ?? "").trim().slice(0, 20) || "Aventureiro",
       lastFogoAt: 0,
     };
     // TODO: carregar posição/HP salvos do Supabase pelo player_id autenticado
@@ -80,7 +103,7 @@ class IgnaraRoom {
   }
 
   _handleDomFogo(sessionId, player) {
-    const now = Date.now();
+    const now = this._now();
 
     // Toda validação usa o relógio do servidor — nunca timestamp do cliente.
     if (!player.alive) return;
@@ -122,7 +145,8 @@ class IgnaraRoom {
     this.inputs.set(sessionId, { dx: 0, dy: 0 });
     this._broadcast({ type: "event", name: "player_died", sessionId, killerId });
 
-    setTimeout(() => {
+    const timer = setTimeout(() => {
+      this._respawnTimers.delete(timer);
       const p = this.players.get(sessionId);
       if (!p) return;
       p.alive = true;
@@ -131,7 +155,8 @@ class IgnaraRoom {
       p.x = 0;
       p.y = 0;
       this._broadcast({ type: "event", name: "player_respawned", sessionId });
-    }, RESPAWN_MS);
+    }, this._respawnMs);
+    this._respawnTimers.add(timer);
   }
 
   _fixedTick(deltaSeconds) {
