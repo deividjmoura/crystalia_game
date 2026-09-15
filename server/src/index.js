@@ -6,9 +6,15 @@ const { WebSocketServer } = require("ws");
 const { IgnaraRoom } = require("./game/IgnaraRoom");
 
 const port = Number(process.env.PORT || 2567);
+// Em hospedagem (Render etc.) o bind precisa ser em todas as interfaces.
+const host = process.env.HOST || "0.0.0.0";
+
 const app = express();
 app.use(express.json());
 
+app.get("/", (_req, res) =>
+  res.json({ service: "crystalia-server", status: "ok" })
+);
 app.get("/health", (_req, res) => res.json({ status: "ok" }));
 
 const server = http.createServer(app);
@@ -39,6 +45,6 @@ wss.on("connection", (ws, req) => {
 
 wss.on("error", (err) => console.error("[DEBUG] erro no WebSocketServer:", err.message));
 
-server.listen(port, () => {
-  console.log(`[crystalia-server] rodando na porta ${port}`);
+server.listen(port, host, () => {
+  console.log(`[crystalia-server] rodando em http://${host}:${port}`);
 });
