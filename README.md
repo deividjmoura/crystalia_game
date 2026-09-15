@@ -1,73 +1,120 @@
-# Crystalia — Estrutura Inicial do Projeto
+# 🔥 Crystalia
 
-Este repositório contém o esqueleto inicial do MVP (Fase 1 do roadmap):
-Ignara jogável, Dom de Fogo, cristais comuns, servidor autoritativo.
+**Um MMORPG-lite brasileiro em desenvolvimento aberto:** quatro ilhas-elemento,
+poderes chamados **Dons**, quests com consequência — e um **servidor
+autoritativo de verdade** desde a primeira linha de código (o cliente nunca
+decide dano, cooldown nem posição; quem decide é o servidor, 20 vezes por
+segundo).
 
-## Estrutura
-
-```
-crystalia/
-├── godot-client/     # Cliente do jogo (Godot 4.x, exporta pra Web e Mobile)
-│   ├── project.godot
-│   ├── scenes/
-│   ├── scripts/
-│   └── assets/
-├── server/           # Servidor autoritativo (Node.js + WebSocket puro)
-│   ├── src/
-│   │   ├── index.js
-│   │   └── game/
-│   └── package.json
-├── database/          # Schema do Supabase (Postgres)
-│   └── supabase_schema.sql
-└── docs/
-    ├── ROADMAP.md
-    └── STRUCTURE.md
-```
-
-## Como rodar localmente
-
-### 1. Servidor
-```bash
-cd server
-npm install
-cp .env.example .env   # preencher com suas credenciais do Supabase
-npm run dev
-```
-Servidor sobe em `ws://localhost:2567`. Teste rápido: abra `http://localhost:2567/health` no navegador, deve responder `{"status":"ok"}`.
-
-### 2. Cliente (Godot)
-1. Baixe o [Godot 4.x](https://godotengine.org/download) (versão Standard, não precisa da .NET).
-2. Abra a pasta `godot-client/` como projeto no Godot.
-3. Rode a cena `scenes/World.tscn` (F5 ou o botão de play).
-4. Não precisa instalar nenhum addon — `NetworkManager.gd` usa o `WebSocketPeer`
-   nativo do Godot pra conversar com o servidor em JSON puro.
-
-### 3. Banco (Supabase)
-1. Crie um projeto grátis em [supabase.com](https://supabase.com).
-2. Vá em SQL Editor e rode o conteúdo de `database/supabase_schema.sql`.
-3. Copie a URL e a chave de serviço (service_role) pro `.env` do servidor.
-
-## Próximo passo depois disso
-Ver `docs/ROADMAP.md` pra checklist detalhado da Fase 1 (MVP).
-
-## GitHub
-Esse projeto já está pronto pra virar um repositório. Depois de baixar os arquivos:
-```bash
-git init
-git add .
-git commit -m "chore: estrutura inicial do projeto Crystalia"
-git branch -M main
-git remote add origin <sua-url-do-github>
-git push -u origin main
-```
-
+> Estado atual: **Fase 1 — MVP "Ignara"** 🏗️ · fundação técnica e combate
+> autoritativo ✅ · ver etapas completas em [`docs/ROADMAP.md`](docs/ROADMAP.md)
 
 ---
 
-<p align="center">
-  <a href="https://wa.me/55SEUNUMERO?text=Ol%C3%A1%20Deivid!%20Quero%20falar%20sobre%20parceria%20/%20projeto.">
-    <img src="https://raw.githubusercontent.com/deividjmoura/deividjmoura/main/assets/logo-deivid-moura-dev.svg" alt="Deivid Moura DEV" width="140"/>
-  </a><br/>
-  <sub><b>Deivid Moura DEV</b> · parcerias e sistemas sob medida</sub>
-</p>
+## 🧪 Demo ao vivo
 
+- **Jogo (Web, Netlify):** _publicação em andamento — a pasta `web/` já tem o
+  build Godot 4.7.2 pronto; ligue o site seguindo [`docs/DEPLOY.md`](docs/DEPLOY.md)_
+- **Servidor (Render):** blueprint em [`render.yaml`](render.yaml), com
+  health-check em `/health`.
+
+> 🔁 O jogo **reconecta sozinho (12 tentativas)** contra o cold-start do plano
+> free e, se o servidor não responder em ~1 min, cai no **MODO DEMO local** —
+> dá pra demonstrar a ilha e o Dom de Fogo sem backend nenhum.
+
+---
+
+## ⚡ Rodando local em 5 minutos
+
+### 1. Servidor autoritativo (Node 20+)
+
+```bash
+cd server
+npm install
+npm run dev        # sobe em ws://127.0.0.1:2567 com /health
+```
+
+### 2. Cliente (Godot **4.7.2** — versão travada em `godot-client/project.godot`)
+
+1. Abra o Godot **4.7.2**, importe `godot-client/project.godot`
+2. Play ▶ — o `NetworkManager` tenta ligar no servidor local e, sem ele, entra
+   em modo demo.
+
+Quer apontar para outro servidor? `WebBridge` lê em runtime: barra final
+`?server=wss://seu-servidor` na URL do jogo, ou edite `web/config.js` no
+deploy (sem precisar re-exportar o jogo!).
+
+---
+
+## 🏗️ Arquitetura
+
+```
+┌──────────────┐        WebSocket JSON          ┌───────────────┐
+│  Cliente     │   { type: "move_input", ... }   │   Servidor    │
+│  Godot 4.7.2 │ ───────────────────────────────►│  Node + `ws`  │
+│  (render +   │                                 │  tick 20/s    │
+│   previsão)  │ ◄───────────────────────────────│  IgnaraRoom   │
+└──────────────┘   estado final (pos/HP/energia) └─┬─────────────┘
+                                                   │ (Fase 1.6)
+                                            ┌──────▼──────┐
+                                            │  Supabase   │  auth + Postgres
+                                            │  (conta)    │  schema pronto
+                                            └─────────────┘
+```
+
+**Padrão de ouro:** o cliente manda *intenções* (`move_input`, `use_dom_fogo`);
+o servidor calcula resultado, aplica **cooldown/custo/dano** e devolve o
+estado confirmado — com reconciliação visual no cliente (`lerp`). Detalhes e
+porquês em [`docs/STRUCTURE.md`](docs/STRUCTURE.md).
+
+---
+
+## 🗂️ Estrutura do repositório
+
+```
+crystalia_game/
+├── godot-client/         # Jogo (Godot 4.7.2)
+│   ├── scenes/           # World, Player (.tscn — 1 agente por cena, ver AGENT_SYNC)
+│   └── scripts/          # NetworkManager, Player, World, FireEffect, web/WebBridge
+├── server/               # Servidor autoritativo (Node + ws + express health)
+│   └── src/game/IgnaraRoom.js
+├── database/
+│   └── supabase_schema.sql
+├── web/                  # Build web exportado (Netlify) + config.js em runtime
+├── docs/                 # ROADMAP · STRUCTURE · DEPLOY
+├── AGENT_SYNC.md         # 🤖 quadro do time de agentes (ler antes de mexer!)
+├── render.yaml           # Deploy blueprint (Render)
+└── netlify.toml          # Headers do build web (wasm/pck com cache)
+```
+
+---
+
+## 🛠️ Stack
+
+| Camada | Tecnologia | Por quê |
+|---|---|---|
+| Cliente | **Godot 4.7.2** (GDScript) | exporta Web + Mobile da mesma base |
+| Rede | WebSocket puro, JSON `{type}` | SDK Colyseus Godot 4 é experimental — fora do MVP (ver STRUCTURE) |
+| Servidor | Node 20 + `ws` + Express (`/health`) | autoritativo desde o protótipo |
+| Conta | **Supabase** (auth + Postgres) | plano gratuito hosteam, SQL aberto |
+| Deploy | Netlify (web) + Render (server) | dois deploys, zero acoplamento |
+
+---
+
+## 👥 Quem constrói
+
+- **Deivid** — direção de jogo, mundo, infra e tudo que é decisão humana.
+- **Equipe de agentes** (coordenada por [`AGENT_SYNC.md`](AGENT_SYNC.md)) —
+  engenharia, testes, CI, docs. Agentes: leiam o quadro **antes** de abrir
+  qualquer editor; claims são a lei.
+
+---
+
+## 🗺️ O que vem agora
+
+- NPC **Tomrik** com diálogo · 12 quests de Ignara · cristais comuns
+- Supabase auth + persistência de quest no servidor
+- **Bragmar, o Forjador Caído** (boss) e o barco que encerra a trilha 🔥
+
+Trilha completa: [`docs/ROADMAP.md`](docs/ROADMAP.md) — e depois, o
+_Fase 2 — Mundo Base_.

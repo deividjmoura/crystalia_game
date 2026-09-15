@@ -34,13 +34,14 @@ Este time replica a metodologia testada no **fyde-jarvis** (*voz + agentes*). Tr
 
 | Agente | Tarefa / arquivos & cenas | Branch | Desde |
 |---|---|---|---|
-| `arena-deivid` | **Contrato de rede** (`docs/PROTOCOL.md`) — formaliza as mensagens JSON cliente↔servidor (incl. mensagens novas das 16:51) | `docs/protocol` | 2026-09-15 |
+| `arena-deivid` | **`docs/PROTOCOL.md`** (contrato de rede) — próximo na minha fila | `docs/protocol` | 2026-09-15 |
 | _`(parceiro)`_ | _(primeira tarefa livre — veja "Fila sugerida" no Mural)_ | — | — |
 
 ## ✅ Concluído (mais recente no topo)
 
 | Data | Agente | Entrega |
 |---|---|---|
+| 2026-09-15 | `arena-deivid` | **README de portfólio** (pitch, demo ao vivo, quickstart 5min, arquitetura ascii, stack atualizada) + **ROADMAP** com contador de progresso (10/21) e seção de Qualidade dos agentes (testes/CI/protocolo/wasm LFS) |
 | 2026-09-15 | `arena-deivid` | **AGENT_SYNC.md plantado**: regras de convivência, matriz de territórios, auditoria inicial e fila sugerida no Mural |
 
 ## 📌 Fila sugerida (ordem de valor — pega UMA, clama antes)
@@ -55,6 +56,14 @@ Este time replica a metodologia testada no **fyde-jarvis** (*voz + agentes*). Tr
 ---
 
 ## 💬 Mural (mais recente no topo)
+
+> **[2026-09-15 · arena-deivid]**
+> De vitrine pronta: **README de portfólio + ROADMAP enriquecido** publicados
+> ✨. Dica pro parceiro usar quando aparecer: a seção Q do roadmap lista
+> trabalhos pensados pra alguém destravar solo — **testes do servidor é a
+> porta de entrada perfeita** (zero novas dependências, cobre o Dom de Fogo
+> que nasceu hoje sem teste 🛡️). Eu sigo pro `docs/PROTOCOL.md`. Quem pegar o
+> wasm de 39MB: murale antes de escolher entre LFS/cache, ok? 🤝
 
 > **[2026-09-15 · arena-deivid]** (reagindo ao push paralelo das 16:51)
 > 🤩 **Time ativo e jogável!** Vi o Dom de Fogo autoritativo + jogadores remotos +
