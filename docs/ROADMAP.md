@@ -5,22 +5,22 @@ servidor autoritativo desde o protótipo.
 
 ## 1. Fundação técnica
 - [x] Estrutura de pastas do cliente e servidor
-- [ ] Projeto Godot rodando localmente (import + play)
-- [ ] Servidor Colyseus rodando localmente (`npm run dev`)
-- [ ] Cliente conectando no servidor via WebSocket
-- [ ] Deploy de teste do servidor (Fly.io ou Oracle Cloud Free Tier)
+- [x] Projeto Godot rodando localmente (import + play)
+- [x] Servidor WebSocket autoritativo rodando localmente (`npm run dev`) — Colyseus foi trocado por `ws` puro (ver STRUCTURE.md)
+- [x] Cliente conectando no servidor via WebSocket
+- [ ] Deploy de teste do servidor (**Render** — `render.yaml` pronto; ou Fly.io/Oracle) — ver `docs/DEPLOY.md`
 - [ ] Supabase configurado (projeto + schema + auth)
 
 ## 2. Movimento e combate básico (autoritativo)
-- [ ] Servidor mantém a posição real de cada jogador (`GameRoom.js`)
-- [ ] Cliente envia apenas *input* (direção, ações), nunca posição final
-- [ ] Reconciliação client-side simples (previsão + correção do servidor)
-- [ ] Sistema de HP/dano calculado no servidor
-- [ ] Cooldown de habilidades controlado por relógio do servidor (nunca do cliente)
+- [x] Servidor mantém a posição real de cada jogador (`GameRoom.js`)
+- [x] Cliente envia apenas *input* (direção, ações), nunca posição final
+- [x] Reconciliação client-side simples (previsão + correção do servidor)
+- [x] Sistema de HP/dano calculado no servidor
+- [x] Cooldown de habilidades controlado por relógio do servidor (nunca do cliente)
 
 ## 3. Ignara jogável
-- [ ] Cena base da ilha (bloqueada/greybox está ok pro MVP)
-- [ ] Spawn do jogador com Dom de Fogo (Sangue Quente: regen de energia com HP < 50%)
+- [x] Cena base da ilha (bloqueada/greybox está ok pro MVP)
+- [x] Spawn do jogador com Dom de Fogo (Sangue Quente: regen de energia com HP < 50%)
 - [ ] NPC Tomrik com diálogo básico
 - [ ] Sistema de quests (aceitar → progresso → completar) plugado nas 12 quests de Ignara
 - [ ] Cristais comuns: drop, inventário, equipar
