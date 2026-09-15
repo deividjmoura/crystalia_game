@@ -91,3 +91,19 @@ cp godot-client/web-shell/config.js web/config.js   # preserva o config editáve
 
 O preset já injeta `<script src="config.js"></script>` no HTML e usa
 renderer GL Compatibility (funciona em mobile/desktop sem threads).
+
+### 5.1 Re-injetar a intro em vídeo (obrigatório pós-export)
+
+O re-export sobrescreve `web/index.html` **inteiro** — incluindo o overlay
+da intro em vídeo (os dois mp4 de `web/videos/` que substituem o splash
+padrão do Godot). Depois de exportar, rode:
+
+```bash
+node tools/inject_web_intro.js   # idempotente, sem dependências
+```
+
+Ele insere `<link intro/intro.css>` + o `<div id="crystalia-intro">` +
+`<script intro/intro.js>` no `index.html` fresco. Os diretórios
+`web/intro/` e `web/videos/` **não** são apagados pelo export — só o
+`index.html` precisa do re-inject. Trocar ordem/velocidade da sequência:
+array `PLAYLIST` e constante `RATE` em `web/intro/intro.js`.

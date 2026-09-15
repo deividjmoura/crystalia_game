@@ -93,6 +93,9 @@ body {
 		<link id="-gd-engine-icon" rel="icon" type="image/png" href="index.icon.png" />
 <link rel="apple-touch-icon" href="index.apple-touch-icon.png"/>
 <script src="config.js"></script>
+	
+<!-- crystalia-intro:v1 -->
+<link rel="stylesheet" href="intro/intro.css">
 	</head>
 	<body>
 		<canvas id="canvas">
@@ -215,6 +218,17 @@ const engine = new Engine(GODOT_CONFIG);
 	}
 }());
 		</script>
+	
+		<div id="crystalia-intro" aria-label="Abertura de Crystalia">
+			<video id="ci-video" playsinline preload="auto" disablepictureinpicture></video>
+			<button id="ci-play" type="button" aria-label="Tocar abertura de Crystalia">🔥 <span>Entrar em Crystalia</span></button>
+			<div id="ci-bottombar">
+				<span id="ci-status">preparando Ignara…</span>
+				<span id="ci-dots"><i class="on"></i><i></i></span>
+				<button id="ci-skip" type="button">Pular intro ⏩</button>
+			</div>
+		</div>
+		<script src="intro/intro.js" defer></script>
 	</body>
 </html>
 

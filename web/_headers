@@ -15,3 +15,6 @@
 
 /index.html
   Cache-Control: public, max-age=0, must-revalidate
+
+/videos/*
+  Cache-Control: public, max-age=0, must-revalidate
