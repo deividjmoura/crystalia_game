@@ -1,0 +1,3 @@
+AGENT_SYNC.md merge=union
+
+docs/*.md merge=union
