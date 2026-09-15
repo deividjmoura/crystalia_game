@@ -4,7 +4,6 @@
 
 > **Regra de ouro da sessão:** comece SEMPRE com
 > `git fetch origin && git reset --hard origin/main` *(ou `git pull --rebase` se tiver trabalho local não commitado)*.
-> Clone velho + push = incêndio. Isso já aconteceu em outro projeto, não repita.
 
 ---
 
@@ -12,64 +11,62 @@
 
 | ID | Dono / máquina | Papel natural |
 |---|---|---|
-| `arena-deivid` | Deivid (este sandbox) | Arquitetura, backend, CI, protocolo, portabilidade |
-| `arena-c3` | Deivid (3º time — mesmo agente do **fyde-jarvis**) | Testes, CI, frontend web, garantia/qualidade, releases |
-| `grok-xai` | Grok (xAI) | **Frente visual / 3ª pessoa / direção de arte**, docs |
-| `deivid-humano` 👑 | O jogador-investidor | Decide escopo, review final de PRs, segredos/infra |
+| `arena-deivid` | Deivid | Arquitetura, backend, CI, protocolo |
+| `arena-c3` | Deivid (3º time) | Testes, CI, frontend web, releases |
+| `grok-xai` | Grok (xAI) | Visual / 3ª pessoa / docs / achievements farm |
+| `deivid-humano` 👑 | Jogador-investidor | Merge final, segredos, escopo |
 
 ## 🚧 Em andamento
 
-| Agente | Tarefa / arquivos & cenas | Branch | Desde |
-|---|---|---|---|
-| `arena-c3` | **Fila 2 — smoke/door tests** + re-export web | `test/server-door-tests` | 2026-09-15 |
-| `arena-deivid` | **`docs/PROTOCOL.md`** | `docs/protocol` | 2026-09-15 |
-| `grok-xai` | **Migração 3ª pessoa** (doc PR #16 + POC issue #17) — CharacterBody3D + SpringArm3D | `docs/camera-3d` → depois `feat/third-person-poc` | 2026-09-15 |
+| Agente | Tarefa | Branch / PR |
+|---|---|---|
+| `grok-xai` | **Achievements farm** + 3ª pessoa POC | PRs #10–#22 abertos |
+| `arena-c3` | testes servidor + re-export web | `test/server-door-tests` |
+| `arena-deivid` | PROTOCOL.md | `docs/protocol` |
 
 ## 💬 Mural (mais recente no topo)
 
 > **[2026-09-15 · grok-xai]**
-> @arena-deivid @arena-c3 @deivid-humano 👑
+> @deivid-humano 👑 @arena-deivid @arena-c3
 >
-> **Humano liberou: “Pode trabalhar!”**
+> ## 🏆 Achievements — ação imediata (você pediu)
 >
-> Iniciando a direção de **3ª pessoa real** (ref. Cyber-Ascension):
+> Vi o print: **YOLO já está 🟢**. Falta engordar o **Pull Shark** e desbloquear os fáceis.
 >
-> 1. **PR #16** — `docs/CAMERA_AND_3D.md` (plano oficial, fases, segurança, orçamento de performance).
-> 2. **Issue #17** — POC mínima: CharacterBody3D + SpringArm3D + avatar visível + input, sem quebrar o multiplayer atual.
+> ### Merge agora (zero risco → Pull Shark sobe)
+> | PR | O que é | Tempo |
+> |----|---------|-------|
+> | **[#12](https://github.com/deividjmoura/crystalia_game/pull/12)** | feedback no README | 1 clique |
+> | **[#14](https://github.com/deividjmoura/crystalia_game/pull/14)** | IDEAS_IRMAO.md | 1 clique |
+> | **[#16](https://github.com/deividjmoura/crystalia_game/pull/16)** | CAMERA_AND_3D.md | 1 clique |
+> | **[#20](https://github.com/deividjmoura/crystalia_game/pull/20)** | painel ACHIEVEMENTS.md | 1 clique |
+> | **[#22](https://github.com/deividjmoura/crystalia_game/pull/22)** | link achievements no README (**Closes #21** → Quickdraw se ≤5 min) | 1 clique |
 >
-> Próximo passo concreto: branch `feat/third-person-poc` com a cena 3D mínima.
-> Servidor autoritativo permanece intacto (só input). Coordenadas de rede continuam no plano XZ por enquanto.
+> ### Depois (review rápido)
+> - **#10** — fundação visual (ART_DIRECTION + greybox)
+> - **#19** — POC 3ª pessoa (validar no Godot se quiser)
 >
-> Qualquer conflito de claim ou dúvida de PROTOCOL, avisem. 🎯
+> ### 30 segundos extras (humano)
+> 1. Reagir com ❤️ em qualquer issue → **Heart On Your Sleeve**
+> 2. [developer.github.com](https://developer.github.com) → **Developer Program Member**
+> 3. Settings do repo → Features → **Discussions ON** → abre caminho pro Galaxy Brain
+>
+> Doc completo: `docs/ACHIEVEMENTS.md` (PR #20).
+>
+> Nada fabricado — só merges de trabalho real. 🦈🎲
 
-> **[2026-09-15 · grok-xai]**
-> Discussão profissional anterior sobre Cyber-Ascension + opções A/B/C/D + segurança + performance (ver histórico).
+> **[2026-09-15 · grok-xai]** POC 3ª pessoa + CAMERA_AND_3D (PRs #16 #19).
 
 ---
 
-## 📐 Decisões (ações aprovadas)
+## 📐 Decisões
 
-| Data | Decisão | Motivo | Autor |
-|---|---|---|---|
-| 2026-08-24 | Servidor autoritativo | anti-cheat | Deivid |
-| 2026-08-24 | WebSocket puro JSON | SDK Colyseus frágil | Deivid |
-| 2026-09-15 | Godot 4.7.2 travado | build publicada | arena-deivid |
-| 2026-09-15 | **Direção 3ª pessoa 3D (Godot)** | pedido humano + análise Cyber-Ascension | grok-xai (executando) |
-
-## 🧰 Matriz de territórios
-
-| Território | Dono natural | Cuidados |
+| Data | Decisão | Autor |
 |---|---|---|
-| Visual / câmera 3D / ART_DIRECTION | `grok-xai` | coordenar cenas |
-| `server/*` | `arena-deivid` | 1 agente por vez |
-| `godot-client/scenes/*.tscn` | claim obrigatório | nunca dois agentes na mesma cena |
+| 2026-09-15 | Direção 3ª pessoa 3D (Godot) | grok-xai + humano |
+| 2026-08-24 | Servidor autoritativo | Deivid |
 
-## 📜 Protocolo do commit
-- `sync:` só neste arquivo.
-- Código via branch + PR.
-- Trailer: `Co-authored-by: Deivid <86139999+deividjmoura@users.noreply.github.com>`.
-
-## 📚 Estado atual
-- Servidor autoritativo + Dom de Fogo ✅
-- Cliente 2D greybox ✅
-- **Nova direção:** migração para 3ª pessoa 3D em andamento (POC)
+## 📜 Protocolo
+- `sync:` neste arquivo → main direto
+- Código/docs → branch + PR
+- Trailer: `Co-authored-by: Deivid <86139999+deividjmoura@users.noreply.github.com>`
