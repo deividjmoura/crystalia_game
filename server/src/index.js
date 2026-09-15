@@ -48,3 +48,27 @@ wss.on("error", (err) => console.error("[DEBUG] erro no WebSocketServer:", err.m
 server.listen(port, host, () => {
   console.log(`[crystalia-server] rodando em http://${host}:${port}`);
 });
+
+// Encerramento limpo: a Render/orquestrador mandam SIGTERM antes de matar o
+// processo (redeploy, scale-down). Sem isso o tick de 20Hz e os timers de
+// respawn morriam com o processo e as conexões eram cortadas de seco.
+let shuttingDown = false;
+function shutdown(signal) {
+  if (shuttingDown) return;
+  shuttingDown = true;
+  console.log(`[crystalia-server] ${signal} recebido — encerrando...`);
+
+  ignara.destroy();
+  wss.clients.forEach((client) => client.close(1001, "server shutting down"));
+
+  server.close(() => {
+    console.log("[crystalia-server] HTTP/WS fechado, tchau.");
+    process.exit(0);
+  });
+
+  // Não fica refém de conexão presa por mais de 3s.
+  setTimeout(() => process.exit(0), 3000).unref();
+}
+
+process.on("SIGTERM", () => shutdown("SIGTERM"));
+process.on("SIGINT", () => shutdown("SIGINT"));
