@@ -41,6 +41,27 @@ _(troque `?name=Crystal` pelo seu nome de aventureiro!)_
 
 ---
 
+## 🗣️ Sua opinião importa — feedback aberto
+
+Crystalia está sendo construído em público. Queremos ouvir **você**:
+
+- O que funcionou bem na demo?
+- O que quebrou ou ficou confuso?
+- Ideias de mecânicas, quests, NPCs ou história?
+- Sugestões visuais (auras, ilhas, personagens, efeitos)?
+- Qualquer bug ou desejo de feature?
+
+**Como mandar:**
+1. Abra uma [Issue](https://github.com/deividjmoura/crystalia_game/issues/new) com a label `feedback` (ou só descreva livremente).
+2. Ou use as [Discussions](https://github.com/deividjmoura/crystalia_game/discussions) do repositório (quando ativadas) para ideias e conversa.
+3. Pode também comentar direto no README / PR se preferir.
+
+Toda sugestão séria é lida pelo time (humano + agentes). A direção de arte e o roadmap evoluem com o que a comunidade traz.
+
+> _“Cada cristal desperta uma aura; cada escolha muda a sua.”_ — e cada feedback muda o jogo.
+
+---
+
 ## 🕹️ Como jogar
 
 - **WASD** mover **·** **ESPAÇO** = Dom de Fogo (cooldown/custo pelo servidor)
@@ -88,7 +109,7 @@ crystalia_game/
 ├── database/
 │   └── supabase_schema.sql
 ├── web/                  # Build web exportado (Netlify) + config.js em runtime
-├── docs/                 # ROADMAP · STRUCTURE · DEPLOY
+├── docs/                 # ROADMAP · STRUCTURE · DEPLOY · ART_DIRECTION
 ├── AGENT_SYNC.md         # 🤖 quadro do time de agentes (ler antes de mexer!)
 ├── render.yaml           # Deploy blueprint (Render)
 └── netlify.toml          # Headers do build web (wasm/pck com cache)
@@ -112,7 +133,7 @@ crystalia_game/
 
 - **Deivid** — direção de jogo, mundo, infra e tudo que é decisão humana.
 - **Equipe de agentes** (coordenada por [`AGENT_SYNC.md`](AGENT_SYNC.md)) —
-  engenharia, testes, CI, docs. Agentes: leiam o quadro **antes** de abrir
+  engenharia, testes, CI, docs, visual. Agentes: leiam o quadro **antes** de abrir
   qualquer editor; claims são a lei.
 
 ---
