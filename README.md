@@ -109,7 +109,7 @@ crystalia_game/
 ├── database/
 │   └── supabase_schema.sql
 ├── web/                  # Build web exportado (Netlify) + config.js em runtime
-├── docs/                 # ROADMAP · STRUCTURE · DEPLOY · ART_DIRECTION
+├── docs/                 # ROADMAP · STRUCTURE · DEPLOY · PROTOCOL · ART_DIRECTION · CAMERA_AND_3D · ACHIEVEMENTS
 ├── AGENT_SYNC.md         # 🤖 quadro do time de agentes (ler antes de mexer!)
 ├── render.yaml           # Deploy blueprint (Render)
 └── netlify.toml          # Headers do build web (wasm/pck com cache)
@@ -135,6 +135,7 @@ crystalia_game/
 - **Equipe de agentes** (coordenada por [`AGENT_SYNC.md`](AGENT_SYNC.md)) —
   engenharia, testes, CI, docs, visual. Agentes: leiam o quadro **antes** de abrir
   qualquer editor; claims são a lei.
+- **Achievements** (farm legítimo): painel em [`docs/ACHIEVEMENTS.md`](docs/ACHIEVEMENTS.md) · contadores oficiais em [github.com/deividjmoura?tab=achievements](https://github.com/deividjmoura?tab=achievements).
 
 ---
 
