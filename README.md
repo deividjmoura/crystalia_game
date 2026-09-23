@@ -27,19 +27,30 @@ _muda a sua.)_
 
 ## 🎮 Demo ao vivo — jogue agora
 
-**→ [admirable-raindrop-103ea1.netlify.app](https://admirable-raindrop-103ea1.netlify.app/?name=Crystal)**
-_(troque `?name=Crystal` pelo seu nome de aventureiro!)_
+**→ [admirable-raindrop-103ea1.netlify.app](https://admirable-raindrop-103ea1.netlify.app/?name=Crystal)** _(troque `?name=Crystal` pelo seu nome de aventureiro!)_
+
+**Novo (09/2026): o site virou um webapp próprio** — `webapp/` — com landing
+épica, menu de visitante e a ilha de Ignara em canvas (sprite real do Kael,
+aura de fogo, cristais rosa, poças de lava, projéteis autoritativos). O
+**servidor autoritativo entrega o próprio jogo** na raiz: um deploy só
+(Render) traz página + WebSocket same-origin.
 
 - 🤝 **Multiplayer real**: abra duas abas com nomes diferentes e veja os
   personagens aparecerem um para o outro em tempo real (servidor autoritativo
   na Render — `wss://crystalia-server.onrender.com`).
+- 🔥 **Dom de Fogo v1.1**: agora é um **projétil decidido no servidor** (custo
+  25 de energia, cooldown 700ms, dano 25 na colisão). O cliente só desenha.
 - 🔌 Se o servidor estiver cochilando no free tier, o jogo **reconecta sozinho
-  (12 tentativas ~1 min)** e, sem resposta, cai no **MODO DEMO local** — a ilha
-  abre offline esperando você.
+  (12 tentativas)** e, sem resposta, cai no **MODO DEMO local** — a ilha abre
+  offline com recrutas de treino para esparramar Dom.
+- 📱 **Celular e desktop**: joystick virtual + botão 🔥 no toque; WASD +
+  Espaço/E no teclado. `Esc` volta ao menu.
 
 > Deploy contínuo ligado: o site atualiza sozinho a cada push na main
-> (Netlify ↔ GitHub). Para trocar o servidor alvo em produção: `web/config.js`,
-> sem re-export! Detalhes em [`docs/DEPLOY.md`](docs/DEPLOY.md).
+> (Netlify ↔ GitHub, publicando `webapp/`). Para trocar o servidor alvo:
+> `webapp/config.js` ou `?server=wss://…` na URL. Detalhes em
+> [`docs/DEPLOY.md`](docs/DEPLOY.md). O export Godot antigo segue em `web/`
+> como legado.
 
 ---
 
@@ -66,10 +77,12 @@ Toda sugestão séria é lida pelo time (humano + agentes). A direção de arte 
 
 ## 🕹️ Como jogar
 
-- **WASD** mover **·** **ESPAÇO** = Dom de Fogo (cooldown/custo pelo servidor)
+- **WASD** mover **·** **ESPAÇO/E** = Dom de Fogo (projétil autoritativo:
+  custo 25, cooldown 700ms — decididos no servidor)
+- No celular: joystick virtual à esquerda, botão 🔥 (ou toque) à direita
 - Duas abas ao mesmo tempo = ver multiplayer espelhando em tempo real 🪞
 - Sem servidor? O **MODO DEMO** te recebe com a ilha inteira desenhada —
-  e devolve o multiplayer quando ele acorda.
+  e devolve o multiplayer quando ele acorda. `Esc` volta ao menu.
 
 > Devs/agentes: instruções completas de run em **docs/DEPLOY.md** e as regras
 > do time em [AGENT_SYNC.md](AGENT_SYNC.md). O README aqui é vitrine 😉

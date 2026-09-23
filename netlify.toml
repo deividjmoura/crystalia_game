@@ -1,40 +1,28 @@
-# Usado quando a Netlify é conectada direto no repositório GitHub
-# (Site settings → Build & deploy): a raiz publicada é a pasta web/,
-# que contém o build já exportado do Godot (não há passo de build em JS).
+# Netlify conectado ao repositório GitHub (Site settings → Build & deploy).
+#
+# Desde 2026-09-23 o site oficial é o WEBAPP (webapp/): landing + menu +
+# canvas do jogo falando WebSocket direto com o servidor autoritativo.
+# O export Godot (web/) continua no repo como legado/vitrine, mas não é
+# mais o que a Netlify publica por padrão.
+#
+# Observação: o MESMO webapp também é servido pelo próprio servidor
+# autoritativo (server/src/index.js entrega webapp/ na raiz) — ou seja,
+# um único deploy na Render já traz jogo + WebSocket same-origin.
 
 [build]
-  publish = "web"
+  publish = "webapp"
   command = ""
 
-# Cache policy: NUNCA "immutable" aqui — os nomes de arquivo do export Godot
-# (index.wasm/pck/js) não mudam entre builds, então um cache eterno trava o
-# browser do jogador numa versão velha do jogo (bug real de 2026-09-15: site
-# deployado servindo perfeitamente e o Chrome continuava mostrando quadrados).
-# Estratégia: revalidar SEMPRE; a Netlify responde 304 com ETag quando o
-# conteúdo não mudou — zero custo de banda no resto do tempo.
+# Cache policy: NUNCA "immutable" — nomes de arquivo fixos sem hash.
+# Revalidar sempre; 304 via ETag quando nada muda (bug real de 2026-09-15:
+# cache eterno prendendo o browser numa versão velha).
 
 [[headers]]
-  for = "/*.wasm"
-  [headers.values]
-    Content-Type = "application/wasm"
-    Cache-Control = "public, max-age=0, must-revalidate"
-
-[[headers]]
-  for = "/*.pck"
+  for = "/*"
   [headers.values]
     Cache-Control = "public, max-age=0, must-revalidate"
 
 [[headers]]
-  for = "/*.js"
-  [headers.values]
-    Cache-Control = "public, max-age=0, must-revalidate"
-
-[[headers]]
-  for = "/index.html"
-  [headers.values]
-    Cache-Control = "public, max-age=0, must-revalidate"
-
-[[headers]]
-  for = "/videos/*"
+  for = "/assets/*"
   [headers.values]
     Cache-Control = "public, max-age=0, must-revalidate"

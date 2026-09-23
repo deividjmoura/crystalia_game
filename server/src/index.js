@@ -1,5 +1,6 @@
 require("dotenv").config();
 const http = require("http");
+const path = require("path");
 const express = require("express");
 const { WebSocketServer } = require("ws");
 
@@ -12,10 +13,18 @@ const host = process.env.HOST || "0.0.0.0";
 const app = express();
 app.use(express.json());
 
-app.get("/", (_req, res) =>
+app.get("/health", (_req, res) => res.json({ status: "ok" }));
+app.get("/api/status", (_req, res) =>
   res.json({ service: "crystalia-server", status: "ok" })
 );
-app.get("/health", (_req, res) => res.json({ status: "ok" }));
+
+// Cliente web oficial (webapp/) servido pelo MESMO processo do servidor
+// autoritativo — assim o WebSocket é same-origin (wss://host/ no preview,
+// sem CORS/mixed-content) e o fluxo landing → menu → jogo funciona num
+// deploy só. No Netlify o webapp segue servível estático (ver docs/DEPLOY.md).
+const webappDir = path.join(__dirname, "..", "..", "webapp");
+app.use(express.static(webappDir));
+app.get("*", (_req, res) => res.sendFile(path.join(webappDir, "index.html")));
 
 const server = http.createServer(app);
 const wss = new WebSocketServer({ server });
