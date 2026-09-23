@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>Crystalia — Desperte a aura dos cristais</title>
+<meta name="description" content="MMORPG-lite brasileiro de quatro ilhas-elemento. Servidor autoritativo, Dons de combate em tempo real e escolhas que mudam a sua chama." />
+<link rel="icon" href="assets/char-kael.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Sora:wght@400;600;700;800&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<!-- ════════════════ LANDING ════════════════ -->
+<section id="landing" class="screen">
+  <nav class="nav">
+    <div class="brand">
+      <svg class="crystal-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 1.5 18.5 9 12 22.5 5.5 9Z" fill="url(#cg)"/><path d="M12 1.5 18.5 9H5.5Z" fill="#7ee7ff" opacity=".9"/><defs><linearGradient id="cg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8be9ff"/><stop offset="1" stop-color="#2f6fed"/></linearGradient></defs></svg>
+      CRYSTALIA
+    </div>
+    <div class="nav-links">
+      <a href="#features">O jogo</a>
+      <a href="#cta">Jogar</a>
+      <button id="navPlay" class="btn btn-ghost btn-sm">Entrar</button>
+    </div>
+  </nav>
+
+  <header class="hero">
+    <div class="hero-copy">
+      <div class="eyebrow"><span class="pulse-dot"></span> Ilha de Ignara · MVP Ao Vivo</div>
+      <h1>Desperte <span class="grad">a aura</span><br/>dos cristais</h1>
+      <p class="lead">Um MMORPG-lite brasileiro sobre quatro ilhas-elemento e poderes chamados
+        <strong>Dons</strong>. Servidor autoritativo, combate em tempo real e escolhas que mudam a sua chama.</p>
+
+      <div class="chips">
+        <div class="chip"><span class="chip-k">Dom</span><span class="chip-v fire">🔥 Fogo</span></div>
+        <div class="chip"><span class="chip-k">HP</span><span class="chip-v">100</span></div>
+        <div class="chip"><span class="chip-k">Tick</span><span class="chip-v">20/s</span></div>
+      </div>
+
+      <div class="cta-row">
+        <button id="btnGoogle" class="btn btn-dark" title="Em breve">
+          <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true"><path fill="#FFC107" d="M43.6 20.1H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.2 8 3l5.7-5.7C34.3 6.1 29.4 4 24 4 13 4 4 13 4 24s9 20 20 20 20-9 20-20c0-1.3-.1-2.6-.4-3.9z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.9 1.2 8 3l5.7-5.7C34.3 6.1 29.4 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-8l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.1H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C36.9 39.2 44 34 44 24c0-1.3-.1-2.6-.4-3.9z"/></svg>
+          Entrar com Google
+        </button>
+        <button id="btnDemoQuick" class="btn btn-primary">⚡ Modo Demo Rápido</button>
+        <button id="btnGuest" class="btn btn-ghost">Entrar como Visitante</button>
+      </div>
+
+      <div class="hero-note">Sem cadastro · visite a ilha em segundos · <kbd>WASD</kbd> mover · <kbd>Espaço</kbd> Dom de Fogo</div>
+    </div>
+
+    <div class="hero-art">
+      <img src="assets/hero-ignara.jpg" alt="Aventureiro de Ignara com aura de fogo e cristais" />
+      <div class="hero-art-frame"></div>
+    </div>
+  </header>
+
+  <section id="features" class="features">
+    <h2>Por que a ilha <span class="grad">respira</span>?</h2>
+    <div class="cards">
+      <article class="card">
+        <div class="card-ico">🌐</div>
+        <h3>Multiplayer real</h3>
+        <p>WebSocket autoritativo a 20 ticks/s. Abra em duas abas e veja o espelhamento em tempo real.</p>
+      </article>
+      <article class="card">
+        <div class="card-ico">🔥</div>
+        <h3>Dom de Fogo</h3>
+        <p>Cooldown, custo de energia e dano decididos pelo servidor. Nada de trapaças pelo cliente.</p>
+      </article>
+      <article class="card">
+        <div class="card-ico">📱</div>
+        <h3>Celular e Desktop</h3>
+        <p>Joystick virtual + botão de Dom no celular; WASD + Espaço no desktop. A mesma ilha.</p>
+      </article>
+      <article class="card">
+        <div class="card-ico">👤</div>
+        <h3>Entrar como Visitante</h3>
+        <p>Jogue instantaneamente sem cadastro. Sua conta de visitante dura enquanto a aba viver.</p>
+      </article>
+    </div>
+  </section>
+
+  <section id="cta" class="cta">
+    <h2>Pronto para <span class="grad">acender</span> a sua chama?</h2>
+    <p>Entre na Ilha de Ignara, colete cristais e mostre o seu Dom.</p>
+    <button id="btnPlayNow" class="btn btn-primary btn-lg">Jogar Agora →</button>
+  </section>
+
+  <footer class="foot">
+    <span>CRYSTALIA · feito com fogo no Brasil 🇧🇷</span>
+    <span class="foot-dim">Servidor autoritativo · 20 ticks/s · cada cristal desperta uma aura</span>
+  </footer>
+</section>
+
+<!-- ════════════════ MENU (guest login) ════════════════ -->
+<section id="menu" class="screen hidden">
+  <div class="menu-bg"></div>
+  <div class="menu-card">
+    <svg class="crystal-ico big" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 1.5 18.5 9 12 22.5 5.5 9Z" fill="url(#cg2)"/><path d="M12 1.5 18.5 9H5.5Z" fill="#7ee7ff" opacity=".9"/><defs><linearGradient id="cg2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8be9ff"/><stop offset="1" stop-color="#2f6fed"/></linearGradient></defs></svg>
+    <div class="eyebrow"><span class="pulse-dot"></span> Portal de Ignara</div>
+    <h2 id="menuGreet">Bem-vindo, aventureiro</h2>
+    <p class="menu-sub">Escolha o nome que aparecerá sobre o seu herói.</p>
+
+    <label class="field">
+      <span>Nome do aventureiro</span>
+      <input id="menuName" type="text" maxlength="20" value="TestAventureiro" autocomplete="off" spellcheck="false" />
+    </label>
+
+    <div id="srvPill" class="pill"><span class="pill-dot wait"></span><span id="srvPillTxt">Verificando servidor…</span></div>
+
+    <div class="menu-actions">
+      <button id="btnEnter" class="btn btn-primary btn-lg">▶ Viajar para Ignara</button>
+      <button id="btnMenuDemo" class="btn btn-ghost">Modo Demo (offline)</button>
+    </div>
+
+    <div class="menu-help">
+      <span><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> mover</span>
+      <span><kbd>Espaço</kbd>/<kbd>E</kbd> Dom de Fogo</span>
+      <span><kbd>Esc</kbd> voltar ao menu</span>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════ JOGO ════════════════ -->
+<section id="game" class="screen hidden">
+  <canvas id="gameCanvas"></canvas>
+
+  <!-- HUD -->
+  <div id="hud" class="hidden">
+    <div class="hud-card">
+      <div class="hud-top">
+        <span id="hudName" class="hud-name">—</span>
+        <span id="hudMode" class="hud-mode hidden">DEMO</span>
+      </div>
+      <div class="bar">
+        <div id="hudHp" class="bar-fill hp" style="width:100%"></div>
+        <span id="hudHpTxt" class="bar-txt">100/100</span>
+      </div>
+      <div class="bar thin">
+        <div id="hudEn" class="bar-fill en" style="width:100%"></div>
+        <span id="hudEnTxt" class="bar-txt">100/100</span>
+      </div>
+      <div class="hud-kills">⚔️ <span id="hudKills">0</span></div>
+    </div>
+
+    <div class="net-pill">
+      <span id="netDot" class="pill-dot wait"></span>
+      <span id="netTxt">Conectando…</span>
+    </div>
+
+    <button id="btnExit" class="btn btn-ghost btn-sm exit" title="Voltar ao menu">⏻ Sair</button>
+
+    <!-- controles touch -->
+    <div id="stick" class="stick hidden"><div id="stickKnob" class="stick-knob"></div></div>
+    <button id="btnDom" class="dom-btn hidden">🔥<small>Dom</small></button>
+  </div>
+
+  <div id="deathOverlay" class="death hidden">
+    <div class="death-card">💀 Você caiu em batalha…<small>renascendo na forja da ilha</small></div>
+  </div>
+</section>
+
+<div id="toasts" class="toasts"></div>
+
+<script src="config.js"></script>
+<script src="game.js"></script>
+</body>
+</html>

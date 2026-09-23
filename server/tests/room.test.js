@@ -163,32 +163,109 @@ describe('IgnaraRoom — movimento autoritativo', () => {
     room._fixedTick(1);
     assert.equal(p.x, 0);
   });
+
+  it('posição é clampeada aos limites da ilha (autoridade do servidor)', () => {
+    const { room, join } = env;
+    const id = join('Corredor');
+    room.handleMessage(id, JSON.stringify({ type: 'move_input', dx: 1, dy: 0 }));
+    room._fixedTick(100); // andaria 400 unidades sem limite
+    const p = room.players.get(id);
+    assert.equal(p.x, 16, 'limite leste do mundo');
+    assert.equal(p.y, 0);
+  });
 });
 
-describe('IgnaraRoom — Dom de Fogo', () => {
-  it('consome energia e avisa todos; 4 acertos derrubam (morte autoritativa)', () => {
+describe('IgnaraRoom — Dom de Fogo (projétil autoritativo)', () => {
+  it('consome 25 de energia, cria projétil no servidor e avisa a sala', () => {
+    const clock = fakeClock();
+    const { room, sockets, join } = makeRoom({ now: clock.now });
+    const a = join('Kael');
+    join('Bragmar');
+    const ws = sockets.get(a);
+
+    room.handleMessage(a, JSON.stringify({ type: 'move_input', dx: 1, dy: 0 }));
+    room.handleMessage(a, JSON.stringify({ type: 'move_input', dx: 0, dy: 0 }));
+    room.handleMessage(a, JSON.stringify({ type: 'use_dom_fogo' }));
+
+    const cast = ws.events('dom_fogo_cast')[0];
+    assert.ok(cast, 'dom_fogo_cast não foi emitido');
+    assert.equal(cast.sessionId, a);
+    assert.equal(cast.cost, 25);
+    assert.equal(room.players.get(a).energy, 100 - 25);
+    assert.equal(room.projectiles.size, 1, 'projétil deveria existir no servidor');
+
+    room._fixedTick(0.01);
+    const snap = ws.lastState()[a];
+    assert.equal(snap.kills, 0);
+    const ultimoState = ws.sent.filter((m) => m.type === 'state').pop();
+    assert.ok(Array.isArray(ultimoState.projectiles), 'snapshot deveria listar projéteis');
+    assert.equal(ultimoState.projectiles.length, 1);
+    room.destroy();
+  });
+
+  it('projétil viaja no tick, colide e causa dano autoritativo (projectile_hit)', () => {
+    const clock = fakeClock();
+    const { room, sockets, join } = makeRoom({ now: clock.now });
+    const a = join('Kael');
+    const b = join('Bragmar');
+    room.players.get(b).x = 2; // alvo a 2 unidades à direita
+
+    // Atirador olha para a direita e dispara.
+    room.handleMessage(a, JSON.stringify({ type: 'move_input', dx: 1, dy: 0 }));
+    room.handleMessage(a, JSON.stringify({ type: 'move_input', dx: 0, dy: 0 }));
+    room.handleMessage(a, JSON.stringify({ type: 'use_dom_fogo' }));
+
+    // 9 un/s * 0.05s = 0.45 por tick — acerta em poucos ticks.
+    for (let i = 0; i < 20 && room.projectiles.size > 0; i++) {
+      room._fixedTick(0.05);
+    }
+
+    const alvo = room.players.get(b);
+    assert.equal(alvo.hp, 75, 'dano de 25 deveria ser aplicado pelo servidor');
+    assert.equal(room.projectiles.size, 0, 'projétil deveria sumir ao colidir');
+
+    const hit = sockets.get(a).events('projectile_hit')[0];
+    assert.ok(hit, 'projectile_hit não foi emitido');
+    assert.equal(hit.sessionId, b);
+    assert.equal(hit.byId, a);
+    assert.equal(hit.damage, 25);
+    room.destroy();
+  });
+
+  it('projétil não acerta o próprio dono', () => {
+    const clock = fakeClock();
+    const { room, join } = makeRoom({ now: clock.now });
+    const a = join('Kael');
+    join('Bragmar');
+
+    room.handleMessage(a, JSON.stringify({ type: 'use_dom_fogo' }));
+    for (let i = 0; i < 40 && room.projectiles.size > 0; i++) {
+      room._fixedTick(0.05);
+    }
+
+    assert.equal(room.players.get(a).hp, 100, 'dono não pode tomar o próprio Dom');
+    assert.equal(room.projectiles.size, 0, 'projétil deveria expirar no alcance');
+    room.destroy();
+  });
+
+  it('4 acertos derrubam (morte autoritativa) e creditam o kill', () => {
     const clock = fakeClock();
     const { room, sockets, join } = makeRoom({ now: clock.now, respawnMs: 60000 });
 
-    const atirador = join('Crystal');
+    const atirador = join('Kael');
     const alvo = join('Bragmar');
     const sAtirador = sockets.get(atirador);
 
-    // Aproxima o atirador a 2 unidades do alvo (ambos começam em 0,0;
-    // movemos o alvo para longe e o atirador até o alcance).
-    room.handleMessage(alvo, JSON.stringify({ type: 'move_input', dx: 1, dy: 0 }));
-    room._fixedTick(0.75); // alvo a 3 unidades
-    room.handleMessage(alvo, JSON.stringify({ type: 'move_input', dx: 0, dy: 0 }));
+    room.players.get(alvo).x = 2; // alvo parado a 2 unidades
     room.handleMessage(atirador, JSON.stringify({ type: 'move_input', dx: 1, dy: 0 }));
-    room._fixedTick(0.4); // atirador a 1,6 — distância 1,4
     room.handleMessage(atirador, JSON.stringify({ type: 'move_input', dx: 0, dy: 0 }));
-
-    // Energia cheia continua 100 (regen é clampado em maxEnergy).
-    assert.equal(room.players.get(atirador).energy, 100);
 
     for (let i = 0; i < 4; i++) {
       room.handleMessage(atirador, JSON.stringify({ type: 'use_dom_fogo' }));
       clock.advance(800); // respeita o cooldown de 700ms
+      for (let t = 0; t < 40 && room.projectiles.size > 0; t++) {
+        room._fixedTick(0.05);
+      }
     }
 
     const alvoState = room.players.get(alvo);
@@ -198,9 +275,11 @@ describe('IgnaraRoom — Dom de Fogo', () => {
     const morte = sAtirador.events('player_died')[0];
     assert.equal(morte.sessionId, alvo);
     assert.equal(morte.killerId, atirador);
+    assert.equal(room.players.get(atirador).kills, 1, 'kill deveria ser creditado');
 
-    // 4 disparos * 20 de energia
-    assert.ok(room.players.get(atirador).energy < 100 - 79);
+    // 4 disparos * 25 de energia (regen de tick roda junto — fica bem abaixo
+    // da energia cheia, provando o custo do combo).
+    assert.ok(room.players.get(atirador).energy < 21);
     room.destroy();
   });
 
@@ -233,17 +312,23 @@ describe('IgnaraRoom — Dom de Fogo', () => {
     room.destroy();
   });
 
-  it('não causa dano em alvo fora do alcance', () => {
+  it('alvo fora do alcance não toma dano (projétil expira no range)', () => {
     const clock = fakeClock();
     const { room, sockets, join } = makeRoom({ now: clock.now });
     const a = join('A');
     const b = join('B');
-    room.players.get(b).x = 10; // longe
+    room.players.get(b).x = 10; // além do alcance de 7 unidades
 
+    room.handleMessage(a, JSON.stringify({ type: 'move_input', dx: 1, dy: 0 }));
+    room.handleMessage(a, JSON.stringify({ type: 'move_input', dx: 0, dy: 0 }));
     room.handleMessage(a, JSON.stringify({ type: 'use_dom_fogo' }));
-    const cast = sockets.get(a).events('dom_fogo_cast')[0];
-    assert.deepEqual(cast.hitSessionIds, []);
+    for (let i = 0; i < 40 && room.projectiles.size > 0; i++) {
+      room._fixedTick(0.05);
+    }
+
+    assert.equal(room.projectiles.size, 0, 'projétil deveria expirar');
     assert.equal(room.players.get(b).hp, 100);
+    assert.equal(sockets.get(a).events('projectile_hit').length, 0);
     room.destroy();
   });
 

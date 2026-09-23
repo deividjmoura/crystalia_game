@@ -1,15 +1,33 @@
-# 📡 PROTOCOL — Crystalia (versão 1.0.1)
+# 📡 PROTOCOL — Crystalia (versão 1.1)
 
 **Contrato vivo das mensagens cliente ↔ servidor.** Se você vai tocar o shape
 de qualquer mensagem, lê isso INTEIRO primeiro — e muda num PR com aviso no
 mural (regra ⛔ conjunta: protocolo é firma, nosso chat depende dele).
 
-- **Fonte de verdade executável:** `server/src/game/IgnaraRoom.js` +
-  `godot-client/scripts/NetworkManager.gd`
+- **Fonte de verdade executável:** `server/src/game/IgnaraRoom.js` + cliente
+  web `webapp/game.js` (e o espelho legado `godot-client/scripts/NetworkManager.gd`)
 - **Transporte:** WebSocket, JSON por mensagem (um objeto por envelope)
-- **Versão ativa:** `1` (deixe explícito em `v` quando for necessário quebrar compat)
+- **Versão ativa:** `1.1` (back-compat: campos novos são opcionais e o
+  cliente antigo ignora o que não conhece — o cliente Godot v16 segue
+  funcionando sem alterações)
 - **Autoridade:** 100% no servidor — o cliente **NUNCA** decide posição,
   HP, energia, dano, cooldown ou morte. Ele manda *intenções*.
+
+### 🆕 v1.1 (2026-09-23) — Dom de Fogo vira projétil autoritativo
+
+- `use_dom_fogo` não causa dano em área imediatamente: cria um **projétil**
+  no servidor (`FOGO_SPEED 9 un/s`, alcance `FOGO_RANGE 7`, raio de acerto
+  `FOGO_HIT_RADIUS 0.55`), que viaja e colide **no tick autoritativo**.
+- Custo do Dom subiu de 20 → **25** de energia (cooldown de 700ms mantido).
+- `welcome` agora traz `{ sessionId, world, tickRate, moveSpeed, dom }` —
+  cliente usa para desenhar a ilha e o HUD sem hardcode.
+- `state` passou a carregar, além de `players`, `projectiles[]`
+  (`{ id, ownerId, x, y, dx, dy }`) e por jogador `dirX/dirY` (mira) e
+  `kills` (placar p/ HUD).
+- Novo evento **`projectile_hit`** `{ projectileId, byId, sessionId, x, y, damage }`.
+- Movimento é clampeado aos limites `world` no servidor (anti-voar-do-mapa).
+- `event/dom_fogo_cast` ganhou `dirX/dirY/cost/projectileId`;
+  `hitSessionIds` ficou obsoleto (vazio, mantido por compat).
 
 ---
 
@@ -42,8 +60,8 @@ Não existe mensagem `join`.
 
 | `type` | Campos | Regras |
 |---|---|---|
-| `move_input` | `dx` (float −1..1), `dy` (float −1..1) | Sanitizado: clamp ±1 e **normalização de diagonal** (hipot>1 ⇒ divide — impede andar 41% rápido na diagonal). **Nunca** contém posição. |
-| `use_dom_fogo` | — | Só uma intenção; validação completa no servidor: vivo? `now − lastFogoAt ≥ 700ms`? `energy ≥ 20`? |
+| `move_input` | `dx` (float −1..1), `dy` (float −1..1) | Sanitizado: clamp ±1 e **normalização de diagonal** (hipot>1 ⇒ divide — impede andar 41% rápido na diagonal). **Nunca** contém posição. A última intenção não nula define a mira (`dirX/dirY`) do projétil. |
+| `use_dom_fogo` | — | Só uma intenção; validação completa no servidor: vivo? `now − lastFogoAt ≥ 700ms`? `energy ≥ 25`? Cria o projétil autoritativo. |
 | *(v1.1 proposto)* `move_input.yaw` | float, radianos (opcional) | COMING SOON junto do 3D: direção do olhar (para validar alcance de skills dirigidas). Servidor **ignora se ausente** — compat quente. |
 | *(v1.1 proposto)* `move_input.look_pitch` | float (opcional) | idem |
 
@@ -51,10 +69,11 @@ Não existe mensagem `join`.
 
 | `type` | Campos-chave | Notas |
 |---|---|---|
-| `welcome` | `sessionId` | enumera seu ator local a partir deste id |
-| `state` | `players`: `{ id: { x, y, hp, maxHp, energy, maxEnergy, alive, displayName } }` | Emissão a 20 Hz (`TICK_RATE`). Cliente **interpola** a posição, não substitui input por posição. |
-| `event/dom_fogo_cast` | `sessionId, x, y, range, hitSessionIds[]` | desenho do efeito visual + shake; o dano já foi aplicado no `state` |
-| `event/player_died` | `sessionId, killerId` | respawn automático em ~3s (`RESPAWN_MS`) |
+| `welcome` | `sessionId, world{minX,maxX,minY,maxY}, tickRate, moveSpeed, dom{cost,cooldownMs,damage,speed,range}` | novo em v1.1 — configuração da ilha para o cliente desenhar. |
+| `state` | `players`: `{ id: { x, y, dirX, dirY, hp, maxHp, energy, maxEnergy, alive, kills, displayName } }`, `projectiles`: `[{ id, ownerId, x, y, dx, dy }]` | Emissão a 20 Hz (`TICK_RATE`). Cliente **interpola** a posição, não substitui input por posição. |
+| `event/dom_fogo_cast` | `sessionId, x, y, dirX, dirY, speed, range, cost, projectileId, hitSessionIds[]` | efeito visual + shake; o dano acontece quando o projétil colide (`projectile_hit`). |
+| `event/projectile_hit` | `projectileId, byId, sessionId, x, y, damage` | novo em v1.1 — dano autoritativo aplicado no tick da colisão. |
+| `event/player_died` | `sessionId, killerId` | respawn automático em ~3s (`RESPAWN_MS`); `kills` do `killerId` sobe no snapshot. |
 | `event/player_respawned` | `sessionId` | posição volta a (0,0) |
 | `player_left` | `sessionId` | remove ator remoto |
 | `kicked` | `reason` | enviado antes do close: `reconnected_elsewhere` (dedup por nome — anti-fantasma, #18) ou `message_flood` (rate-limit) |
@@ -71,9 +90,11 @@ com `seq` + LZ-string se crescer).
 |---|---|---|
 | `TICK_RATE` | 20 Hz | frequência do tick autoritativo |
 | `MOVE_SPEED` | 4.0 un/s | técnica do batimento do jogador |
-| `FOGO_ENERGY_COST` | 20 | é o que torna combo careta |
+| `FOGO_ENERGY_COST` | 25 (v1.1) | é o que torna combo careta |
 | `FOGO_COOLDOWN_MS` | 700 ms | ritmo do combo |
-| `FOGO_RANGE` | 2.6 unidades | alcance visível do Dom |
+| `FOGO_SPEED` | 9 un/s (v1.1) | velocidade do projétil autoritativo |
+| `FOGO_RANGE` | 7 un (v1.1) | alcance máximo do projétil |
+| `FOGO_HIT_RADIUS` | 0.55 un (v1.1) | raio de colisão projétil ↔ jogador |
 | `FOGO_DAMAGE` | 25 | leva metade do HP em 4 ombros |
 | `RESPAWN_MS` | 3000 ms | viagem a expensas de tempo |
 | regen energy | 5/s (50% HP) / 12/s (<50% HP) | **Sangue Quente**: o Dom acende mais perto da derrota |

@@ -48,6 +48,22 @@ https://SEU-SITE.netlify.app/?server=wss://crystalia-server.onrender.com&name=Cr
 
 Ordem de resolução no navegador: `?server=` → `config.js` → URL padrão.
 
+## 2.5 O webapp (site novo, 2026-09-23)
+
+O cliente oficial agora é o **`webapp/`** (landing + menu + canvas). Ele pode
+ser entregue de duas formas — as duas já estão ligadas:
+
+1. **Pelo próprio servidor autoritativo (recomendado):** `server/src/index.js`
+   serve `webapp/` na raiz HTTP do mesmo processo do WebSocket. Um Web Service
+   da Render apontando para `server/` já publica o jogo inteiro
+   (same-origin = `wss://` automático, sem CORS).
+2. **Pela Netlify:** o `netlify.toml` da raiz publica `webapp/` (estático).
+   Nesse caso o WebSocket cai em `wss://crystalia-server.onrender.com` por
+   padrão — troque em `webapp/config.js` ou use `?server=wss://…` na URL.
+
+Atalhos de URL: `?name=Fulano` (pré-preenche o nome), `?server=wss://…`
+(sobrepõe o servidor), botão **Modo Demo Rápido** (cai direto no demo offline).
+
 ## 3. Jogo na Netlify — dois caminhos
 
 ### Caminho A — arrastar e soltar (1 minuto, sem vincular conta GitHub)

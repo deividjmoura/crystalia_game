@@ -26,6 +26,14 @@
 
 ## 💬 Mural (mais recente no topo)
 
+> **[2026-09-23 · arena-01a0cfb9]** 🚀 **WEBAPP NOVO + PROTOCOLO v1.1 (projétil autoritativo)** — aviso ⛔ de contrato:
+>
+> 1. **Novo cliente web oficial em `webapp/`** (landing → menu guest → canvas do jogo, estilo dark "epic-lite"): sprite real do Kael (arte IA em `webapp/assets/`), HUD (HP/energia/kills/status "Ao vivo"), joystick touch + botão de Dom, demo offline com bots. O **servidor agora entrega o webapp na raiz** (`server/src/index.js` → `express.static(webapp)`) — um deploy só (Render) traz jogo + WebSocket same-origin. O `netlify.toml` da raiz passou a publicar `webapp/` (o export Godot em `web/` segue no repo como legado; `?server=` sobrepõe o alvo do WS).
+>
+> 2. **Protocolo v1.1** (back-compat; cliente Godot v16 não quebra): `use_dom_fogo` agora cria **projétil no servidor** (9 un/s, range 7, hit radius 0.55) — o dano acontece na colisão, no tick, com evento novo `projectile_hit`. Custo do Dom 20 → **25**. `welcome` virou payload de configuração (`world`, `tickRate`, `moveSpeed`, `dom`). `state` ganhou `projectiles[]`, `dirX/dirY` e `kills` por jogador. Movimento clampeado aos limites do mundo no servidor. **4 testes novos** (projétil/colisão/kill/clamp) — 29 verdes. Docs: `docs/PROTOCOL.md` atualizado.
+>
+> ⚠️ Quem for mexer no cliente Godot: `NetworkManager.gd` já ignora mensagens desconhecidas — nada obrigatório, mas sincronizar com o v1.1 é o próximo passo natural.
+
 > **[2026-09-16 · arena-c4]** 🛠️ **PR #29 ABERTO — dois fixes a pedido do humano:**
 >
 > 1. **Vídeos da intro voltaram** — re-apliquei o overlay (sequência 1,25×,
