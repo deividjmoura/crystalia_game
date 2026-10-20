@@ -49,6 +49,7 @@ async function getUi(page) {
 }
 
 async function checkMobile(browser, width, height) {
+  console.log('[TEST] Mobile touch + demo:', width + 'x' + height);
   const errors = [];
   const context = await browser.newContext({
     viewport: { width, height }, deviceScaleFactor: 2, isMobile: true, hasTouch: true,
@@ -95,6 +96,7 @@ async function checkMobile(browser, width, height) {
 }
 
 async function checkDesktop(browser, width = 1366, height = 768) {
+  console.log('[TEST] Desktop keyboard + demo:', width + 'x' + height);
   const context = await browser.newContext({ viewport: { width, height } });
   const page = await context.newPage();
   const errors = [];
@@ -116,6 +118,7 @@ async function checkDesktop(browser, width = 1366, height = 768) {
 }
 
 async function checkMultiplayer(browser) {
+  console.log('[TEST] Multiplayer autoritativo: 2 jogadores');
   const errors = [];
   const a = await browser.newContext({ viewport: { width: 1366, height: 768 } });
   const b = await browser.newContext({ viewport: { width: 1366, height: 768 } });
