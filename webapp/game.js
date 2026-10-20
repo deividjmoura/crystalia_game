@@ -42,7 +42,13 @@ function toast(msg, ms = 3200) {
   const box = $('toasts');
   if (!box) return;
   while (box.children && box.children.length >= MAX_TOASTS) {
-    box.firstElementChild.remove();
+    const oldest = box.firstElementChild;
+    if (!oldest) break;
+    if (oldest._tid !== undefined) {
+      clearTimeout(oldest._tid);
+      activeToastTimers.delete(oldest._tid);
+    }
+    oldest.remove();
   }
   const el = document.createElement('div');
   el.className = 'toast';
@@ -52,6 +58,7 @@ function toast(msg, ms = 3200) {
     activeToastTimers.delete(tid);
     el.remove();
   }, ms);
+  el._tid = tid;
   activeToastTimers.add(tid);
 }
 
@@ -80,54 +87,110 @@ const S = {
   demoProj: [],
   demoKills: 0,
   lastDomAt: 0,
-  deathShownAt: 0,
   shake: 0,
   debug: new URLSearchParams(location.search).get('debug') === '1',
 };
 
 /* ───────────────── Telemetria de FPS / Performance ───────────────── */
+const PERF_WINDOW = 240;
 const perf = {
   fps: 60,
-  frameMs: 16.7,
-  low1Fps: 60,
-  samples: new Float32Array(120),
+  frameMs: 0,
+  dtSamples: new Float32Array(PERF_WINDOW),
+  workSamples: new Float32Array(PERF_WINDOW),
   sampleIdx: 0,
   sampleCount: 0,
+  slowStreak: 0,
+  fastStreak: 0,
   lowSpec: false,
-  drawCallsEst: 0,
 };
 
+function resetPerf() {
+  perf.fps = 60;
+  perf.frameMs = 0;
+  perf.sampleIdx = 0;
+  perf.sampleCount = 0;
+  perf.slowStreak = 0;
+  perf.fastStreak = 0;
+}
+
 function recordPerf(dtMs, workMs) {
-  perf.samples[perf.sampleIdx] = dtMs;
-  perf.sampleIdx = (perf.sampleIdx + 1) % perf.samples.length;
-  if (perf.sampleCount < perf.samples.length) perf.sampleCount++;
+  // Ignora pausas longas (troca de aba, janela minimizada ou transição de tela)
+  if (dtMs <= 0 || dtMs > 200 || document.hidden) return;
 
-  const instFps = dtMs > 0 ? 1000 / dtMs : 60;
-  perf.fps = lerp(perf.fps, clamp(instFps, 1, 144), 0.08);
-  perf.frameMs = lerp(perf.frameMs, workMs, 0.12);
+  perf.dtSamples[perf.sampleIdx] = dtMs;
+  perf.workSamples[perf.sampleIdx] = workMs;
+  perf.sampleIdx = (perf.sampleIdx + 1) % PERF_WINDOW;
+  if (perf.sampleCount < PERF_WINDOW) perf.sampleCount++;
 
-  // Degradação graciosa para celulares de entrada se o frame exceder orçamento
-  if (perf.sampleCount >= 30) {
-    if (perf.fps < 38 || perf.frameMs > 12) perf.lowSpec = true;
-    else if (perf.fps > 52 && perf.frameMs < 7) perf.lowSpec = false;
+  const instFps = 1000 / dtMs;
+  perf.fps = perf.sampleCount === 1 ? clamp(instFps, 1, 144) : lerp(perf.fps, clamp(instFps, 1, 144), 0.08);
+  perf.frameMs = perf.sampleCount === 1 ? workMs : lerp(perf.frameMs, workMs, 0.12);
+
+  // Histerese para modo de economia em aparelhos de entrada (evita ativar por pico isolado)
+  if (dtMs > 26 || workMs > 12) {
+    perf.slowStreak++;
+    perf.fastStreak = 0;
+    if (perf.slowStreak >= 25) perf.lowSpec = true;
+  } else if (dtMs < 20 && workMs < 7) {
+    perf.fastStreak++;
+    perf.slowStreak = Math.max(0, perf.slowStreak - 1);
+    if (perf.fastStreak >= 45) perf.lowSpec = false;
   }
 }
 
-function computeLow1Fps() {
-  if (perf.sampleCount === 0) return 60;
-  let maxDt = 0;
-  for (let i = 0; i < perf.sampleCount; i++) {
-    if (perf.samples[i] > maxDt) maxDt = perf.samples[i];
+function computePerfMetrics() {
+  const n = perf.sampleCount;
+  if (n === 0) {
+    return { avgFps: 60, low1Fps: 60, minFps: 60, avgWorkMs: 0, p95WorkMs: 0, p99WorkMs: 0 };
   }
-  return maxDt > 0 ? Math.min(120, 1000 / maxDt) : 60;
+  const dts = Array.from(perf.dtSamples.subarray(0, n)).sort((a, b) => a - b);
+  const works = Array.from(perf.workSamples.subarray(0, n)).sort((a, b) => a - b);
+
+  let sumDt = 0;
+  let sumWork = 0;
+  for (let i = 0; i < n; i++) {
+    sumDt += dts[i];
+    sumWork += works[i];
+  }
+  const avgDt = sumDt / n;
+  const avgFps = avgDt > 0 ? Math.min(144, 1000 / avgDt) : 60;
+
+  // 1% low FPS real: média dos 1% frames mais lentos (maiores dtMs na cauda superior)
+  const slowCount = Math.max(1, Math.ceil(n * 0.01));
+  let slowDtSum = 0;
+  for (let i = n - slowCount; i < n; i++) slowDtSum += dts[i];
+  const meanSlowDt = slowDtSum / slowCount;
+  const low1Fps = meanSlowDt > 0 ? Math.min(144, 1000 / meanSlowDt) : 60;
+
+  // Min FPS absoluto: baseado no maior dtMs observado na janela
+  const maxDt = dts[n - 1];
+  const minFps = maxDt > 0 ? Math.min(144, 1000 / maxDt) : 60;
+
+  const p95WorkMs = works[Math.min(n - 1, Math.floor(n * 0.95))];
+  const p99WorkMs = works[Math.min(n - 1, Math.floor(n * 0.99))];
+
+  return {
+    avgFps,
+    low1Fps,
+    minFps,
+    avgWorkMs: sumWork / n,
+    p95WorkMs,
+    p99WorkMs,
+  };
 }
 
 window.__CRYSTALIA_PERF__ = {
   getSnapshot() {
+    const m = computePerfMetrics();
     return {
-      fps: Math.round(perf.fps * 10) / 10,
-      low1Fps: Math.round(computeLow1Fps() * 10) / 10,
-      frameWorkMs: Math.round(perf.frameMs * 100) / 100,
+      fps: Math.round(m.avgFps * 10) / 10,
+      low1Fps: Math.round(m.low1Fps * 10) / 10,
+      minFps: Math.round(m.minFps * 10) / 10,
+      frameWorkMs: Math.round(m.avgWorkMs * 1000) / 1000,
+      p95WorkMs: Math.round(m.p95WorkMs * 1000) / 1000,
+      p99WorkMs: Math.round(m.p99WorkMs * 1000) / 1000,
+      samples: perf.sampleCount,
       particles: S.particles.length,
       combatTexts: S.combatTexts.length,
       actors: (S.me ? 1 : 0) + S.remotes.size + S.demoBots.length,
@@ -166,7 +229,11 @@ function show(name) {
     probeServer();
     menuSelectTimer = setTimeout(() => {
       menuSelectTimer = null;
-      if (S.screen === 'menu' && $('menuName')) $('menuName').select();
+      const isCoarse = typeof window.matchMedia === 'function' &&
+        window.matchMedia('(pointer: coarse)').matches;
+      if (S.screen === 'menu' && !isCoarse && $('menuName')) {
+        $('menuName').select();
+      }
     }, 60);
   } else {
     stopProbeServer();
@@ -507,6 +574,11 @@ function handleServerMessage(m) {
   switch (m.type) {
     case 'welcome': {
       S.myId = m.sessionId;
+      S.me = null;
+      S.remotes.clear();
+      S.projectiles.clear();
+      const deathEl = $('deathOverlay');
+      if (deathEl) deathEl.classList.add('hidden');
       if (m.world) S.world = { ...DEFAULT_WORLD, ...m.world };
       if (typeof m.tickRate === 'number' && m.tickRate > 0) S.tickRate = m.tickRate;
       if (typeof m.moveSpeed === 'number' && m.moveSpeed > 0) S.moveSpeed = m.moveSpeed;
@@ -934,6 +1006,7 @@ function demoCast() {
 /* ═══════════════════ INÍCIO DE PARTIDA ═══════════════════ */
 function startGame(demo) {
   leaveGame();
+  resetPerf();
   S.myName = chosenName();
   const hudName = $('hudName');
   if (hudName) hudName.textContent = S.myName;
@@ -953,6 +1026,7 @@ function startGame(demo) {
     S.demo = false;
     connect();
   }
+  lastT = performance.now();
 }
 
 $('btnEnter').addEventListener('click', () => startGame(false));
@@ -972,10 +1046,20 @@ const MOVE_KEYS = new Set([
   'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight',
 ]);
 
-// Joystick virtual (metade esquerda da tela) com deadzone radial
+// Joystick virtual (metade esquerda da tela) com deadzone radial e raio dinâmico
 const joystick = { active: false, dx: 0, dy: 0, id: null, ox: 0, oy: 0, radius: 60 };
 const STICK_DEADZONE = 0.12;
 const stickEl = $('stick'), knobEl = $('stickKnob');
+
+function updateStickMetrics() {
+  if (!stickEl || typeof stickEl.getBoundingClientRect !== 'function') return;
+  const r = stickEl.getBoundingClientRect();
+  if (r && r.width > 0 && r.height > 0) {
+    joystick.ox = r.left + r.width / 2;
+    joystick.oy = r.top + r.height / 2;
+    joystick.radius = Math.max(24, r.width * 0.5);
+  }
+}
 
 function resetInputs() {
   const hadInput = keys.size > 0 || joystick.active;
@@ -1048,12 +1132,14 @@ function stickFromTouch(t) {
 }
 
 stickEl.addEventListener('touchstart', (e) => {
+  if (joystick.active) {
+    e.preventDefault();
+    return;
+  }
   const t = e.changedTouches[0];
+  if (!t) return;
   joystick.id = t.identifier;
-  const r = stickEl.getBoundingClientRect();
-  joystick.ox = r.left + r.width / 2;
-  joystick.oy = r.top + r.height / 2;
-  joystick.radius = Math.max(36, (r.width || 120) * 0.5);
+  updateStickMetrics();
   joystick.active = true;
   stickFromTouch(t);
   e.preventDefault();
@@ -1234,6 +1320,7 @@ function resize() {
   canvas.height = Math.floor(vh * dpr);
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   rebuildVignette();
+  updateStickMetrics();
 }
 window.addEventListener('resize', resize);
 
@@ -1286,8 +1373,6 @@ function buildDecor() {
     const rot = sRand(-0.35, 0.35);
     crystals.push({
       x, y, h, w, rot,
-      cos: Math.cos(rot),
-      sin: Math.sin(rot),
       pink: rng() > 0.35, // rosa vs violeta
       ph: rng() * 6.28,
     });
@@ -1432,6 +1517,22 @@ function ambient(dt) {
   }
 }
 
+function emitProjectileTrail(p, dt) {
+  p.trailAcc = (p.trailAcc || 0) + dt;
+  const trailEvery = perf.lowSpec ? 0.045 : 0.026;
+  while (p.trailAcc >= trailEvery) {
+    p.trailAcc -= trailEvery;
+    S.particles.push(makeParticle(
+      p.rx - p.dx * 0.2 + rand(-0.12, 0.12),
+      p.ry - p.dy * 0.2 + rand(-0.12, 0.12),
+      -p.dx * 0.8 + rand(-0.3, 0.3),
+      -p.dy * 0.8 + rand(-0.6, -0.1),
+      rand(0.22, 0.42), rand(2.2, 4.2),
+      Math.random() > 0.35 ? '#ff9a3c' : '#ffd166'
+    ));
+  }
+}
+
 /* ── Loop principal ── */
 let cam = { x: 0, y: 0, init: false };
 let lastT = performance.now();
@@ -1519,38 +1620,14 @@ function frame(now) {
       p.rx = damp(p.rx, p.x, 14, dt);
       p.ry = damp(p.ry, p.y, 14, dt);
     }
-    p.trailAcc = (p.trailAcc || 0) + dt;
-    const trailEvery = perf.lowSpec ? 0.045 : 0.026;
-    while (p.trailAcc >= trailEvery) {
-      p.trailAcc -= trailEvery;
-      S.particles.push(makeParticle(
-        p.rx - p.dx * 0.2 + rand(-0.12, 0.12),
-        p.ry - p.dy * 0.2 + rand(-0.12, 0.12),
-        -p.dx * 0.8 + rand(-0.3, 0.3),
-        -p.dy * 0.8 + rand(-0.6, -0.1),
-        rand(0.22, 0.42), rand(2.2, 4.2),
-        Math.random() > 0.35 ? '#ff9a3c' : '#ffd166'
-      ));
-    }
+    emitProjectileTrail(p, dt);
   }
 
   for (const p of S.demoProj) {
     if (p.rx === undefined) { p.rx = p.x; p.ry = p.y; }
     p.rx = damp(p.rx, p.x, 22, dt);
     p.ry = damp(p.ry, p.y, 22, dt);
-    p.trailAcc = (p.trailAcc || 0) + dt;
-    const trailEvery = perf.lowSpec ? 0.045 : 0.026;
-    while (p.trailAcc >= trailEvery) {
-      p.trailAcc -= trailEvery;
-      S.particles.push(makeParticle(
-        p.rx - p.dx * 0.2 + rand(-0.12, 0.12),
-        p.ry - p.dy * 0.2 + rand(-0.12, 0.12),
-        -p.dx * 0.8 + rand(-0.3, 0.3),
-        -p.dy * 0.8 + rand(-0.6, -0.1),
-        rand(0.22, 0.42), rand(2.2, 4.2),
-        Math.random() > 0.35 ? '#ff9a3c' : '#ffd166'
-      ));
-    }
+    emitProjectileTrail(p, dt);
   }
 
   // Câmera com amortecimento exponencial independente de frame-rate
@@ -1928,14 +2005,14 @@ function drawDebugOverlay() {
   ctx.save();
   ctx.font = '600 11px monospace';
   ctx.textAlign = 'left';
-  const bx = 16, by = 148, bw = 216, bh = 68;
+  const bx = 16, by = 148, bw = 244, bh = 68;
   ctx.fillStyle = 'rgba(6, 9, 16, 0.82)';
   roundRect(bx, by, bw, bh, 8);
   ctx.fill();
   ctx.fillStyle = snap.fps >= 50 ? '#2ee66b' : (snap.fps >= 30 ? '#fbbf24' : '#ff4d4d');
-  ctx.fillText(`FPS: ${snap.fps.toFixed(1)} (1% low: ${snap.low1Fps.toFixed(0)})`, bx + 10, by + 18);
+  ctx.fillText(`FPS: ${snap.fps.toFixed(1)} | 1%low: ${snap.low1Fps.toFixed(1)} | min: ${snap.minFps.toFixed(0)}`, bx + 10, by + 18);
   ctx.fillStyle = '#e9eefb';
-  ctx.fillText(`Frame CPU: ${snap.frameWorkMs.toFixed(2)} ms | DPR: ${dpr}`, bx + 10, by + 36);
+  ctx.fillText(`CPU: ${snap.frameWorkMs.toFixed(2)}ms (P95: ${snap.p95WorkMs.toFixed(2)}ms) DPR:${dpr}`, bx + 10, by + 36);
   ctx.fillText(`Ptcl: ${snap.particles} | Act: ${snap.actors} | Prj: ${snap.projectiles}`, bx + 10, by + 54);
   ctx.restore();
 }
