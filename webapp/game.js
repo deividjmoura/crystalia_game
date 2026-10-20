@@ -86,7 +86,7 @@ const S = {
   demoBots: [],
   demoProj: [],
   demoKills: 0,
-  lastDomAt: 0,
+  lastDomAt: Number.NEGATIVE_INFINITY,
   shake: 0,
   debug: new URLSearchParams(location.search).get('debug') === '1',
 };
@@ -796,7 +796,7 @@ function enterDemo(reason) {
   S.me = makeActor(S.myName, true);
   S.me.rxInit = true;
   S.demoKills = 0;
-  S._demoLastCast = 0;
+  S._demoLastCast = Number.NEGATIVE_INFINITY;
 
   // Recruta Brasa nasce à frente da mira inicial (+X) como alvo de treino direto;
   // Cinzento e Faísca patrulham a ilha e fazem manobras evasivas ao receber impacto.
