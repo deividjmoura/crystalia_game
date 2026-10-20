@@ -32,10 +32,10 @@ jobs:
       # CI integration review of A1/A2 before either PR is merged.
       # This creates NO commit, never pushes and preserves both PR branches.
       - name: Combine UI and gameplay PRs in temporary worktree
-        if: github.event_name == 'pull_request' && (github.event.pull_request.number == 32 || github.event.pull_request.number == 33)
+        if: (github.event_name == 'push' && github.ref == 'refs/heads/feat/crystalia-mobile-ui') || (github.event_name == 'pull_request' && (github.event.pull_request.number == 32 || github.event.pull_request.number == 33))
         shell: bash
         run: |
-          if [ "${{ github.event.pull_request.number }}" = "33" ]; then
+          if [ "${{ github.event_name }}" = "push" ] || [ "${{ github.event.pull_request.number }}" = "33" ]; then
             OTHER_BRANCH="arena/973f24d8-crystalia-game"
           else
             OTHER_BRANCH="feat/crystalia-mobile-ui"
