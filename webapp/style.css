@@ -407,12 +407,15 @@ h1 {
   .features h2 { margin-bottom: 16px; }
 }
 
-/* O HTML nasce com .hidden no joystick e no Dom (desktop limpo).
-   .hidden é !important, então a regra antiga sem !important nunca
-   mostrava os controles no celular. Aqui a especificidade vence. */
-@media (pointer: coarse), (hover: none), (max-width: 900px) {
+/* Controles touch apenas em dispositivos que não dispõem de ponteiro fino:
+   viewport estreita, isoladamente, NÃO implica touchscreen. */
+@media (pointer: coarse), (hover: none) {
   #hud:not(.hidden) #stick.stick,
   #hud:not(.hidden) #btnDom.dom-btn { display: flex !important; }
+}
+
+/* Alvos e menu responsivos também em janelas desktop estreitas. */
+@media (pointer: coarse), (hover: none), (max-width: 900px) {
   .btn { min-height: 48px; }
   .btn-sm { min-height: 44px; padding: 10px 14px; }
   .menu-actions .btn { width: 100%; justify-content: center; }
@@ -509,5 +512,5 @@ body:has(#game:not(.hidden)) .toasts {
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
-  .orient-hint { animation: none; opacity: 1; visibility: visible; }
+  .orient-hint { display: none; }
 }
