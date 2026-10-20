@@ -1,0 +1,85 @@
+name: Crystalia browser smoke
+
+on:
+  pull_request:
+    paths:
+      - 'webapp/**'
+      - 'tests/browser/**'
+      - '.github/workflows/browser-smoke.yml'
+  push:
+    branches:
+      - main
+      - feat/crystalia-mobile-ui
+    paths:
+      - 'webapp/**'
+      - 'tests/browser/**'
+      - '.github/workflows/browser-smoke.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  chromium-browser:
+    name: Browser E2E (Chromium desktop/mobile + WS)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # CI integration review of A1/A2 before either PR is merged.
+      # This creates NO commit, never pushes and preserves both PR branches.
+      - name: Combine UI and gameplay PRs in temporary worktree
+        if: (github.event_name == 'push' && github.ref == 'refs/heads/feat/crystalia-mobile-ui') || (github.event_name == 'pull_request' && (github.event.pull_request.number == 32 || github.event.pull_request.number == 33))
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" = "push" ] || [ "${{ github.event.pull_request.number }}" = "33" ]; then
+            OTHER_BRANCH="arena/973f24d8-crystalia-game"
+          else
+            OTHER_BRANCH="feat/crystalia-mobile-ui"
+          fi
+          git fetch origin "refs/heads/${OTHER_BRANCH}:refs/remotes/origin/${OTHER_BRANCH}"
+          git -c user.name=crystalia-ci -c user.email=crystalia-ci@example.invalid merge --no-commit --no-ff "origin/${OTHER_BRANCH}"
+          echo "Combined PR #32 and #33 locally — no push or merge to main"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: server/package-lock.json
+
+      - name: Install game server deps
+        working-directory: server
+        run: npm ci
+
+      - name: Install browser test runner (CI only)
+        working-directory: tests/browser
+        run: |
+          npm install --no-save --no-package-lock playwright@1.56.1
+          npx playwright install --with-deps chromium
+
+      - name: Start authoritative server
+        shell: bash
+        run: |
+          PORT=2567 node server/src/index.js > /tmp/crystalia-server.log 2>&1 &
+          echo $! > /tmp/crystalia-server.pid
+          for attempt in $(seq 1 35); do
+            if curl -fsS http://127.0.0.1:2567/health >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/crystalia-server.log
+          exit 1
+
+      - name: Browser smoke (portrait, landscape, keyboard, touch, multiplayer)
+        run: node tests/browser/smoke.cjs
+
+      - name: Server logs on failure
+        if: failure()
+        run: cat /tmp/crystalia-server.log || true
+
+      - name: Shut down server
+        if: always()
+        run: |
+          if [ -f /tmp/crystalia-server.pid ]; then kill -TERM "$(cat /tmp/crystalia-server.pid)" || true; fi
