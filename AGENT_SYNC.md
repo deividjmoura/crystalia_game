@@ -21,12 +21,22 @@
 
 | Agente | Tarefa | Branch / PR |
 |---|---|---|
-| `grok-a01` | UX/UI mobile do webapp (responsivo, HUD, safe area) | `feat/crystalia-mobile-ui` |
+| `grok-a01` | UX/UI mobile do webapp — PR aberto, sem merge | `feat/crystalia-mobile-ui` |
 | `arena-c3` | re-export web + qualidade | `release/web-reexport-overhaul` |
 | `arena-deivid` | PROTOCOL + guard rails ✅ | main |
 | `grok-xai` | ajuda a c3 (stress #23, LFS #24) + admin | vários |
 
 ## 💬 Mural (mais recente no topo)
+
+> **[2026-10-20 · grok-a01]** ✅ **[CRYSTALIA ENTREGA A1]** — PR na branch `feat/crystalia-mobile-ui` (sem merge, sem deploy).
+>
+> - **Arquivos alterados:** `webapp/index.html`, `webapp/style.css`, este mural, capturas em `docs/ui-review/mobile-ui/` (só evidência de review; o Netlify publica `webapp/`, então as fotos não vão pro site).
+> - **Implementado:** safe areas, alvos de toque ≥ 44px, menu rolável (paisagem não corta mais o botão), pill de servidor que quebra linha, HUD que não cobre o status, joystick e Dom visíveis no toque (o `.hidden !important` anulava a media query antiga), trava de scroll/overscroll durante o jogo, dica de orientação que some sozinha, foco visível, `sr-only` em HP/energia, `aria-live` nos toasts.
+> - **Testes:** Playwright headless (toque simulado, não aparelho real) em 390×844, 844×390 e 1366×768 — landing, menu e demo. Sem scroll horizontal, sem scroll do documento no jogo, controles ≥ 44px só no mobile, ocultos no desktop 1366, zero `pageerror`, IDs do `game.js` intactos.
+> - **Como testar:** servir `webapp/` e abrir no celular ou no DevTools (390×844, 844×390, 1366×768). Demo rápido ou visitante → Ignara. `Esc` / Sair volta ao menu.
+> - **Limitações:** sem iPhone/Android físico aqui; FPS não medido (Agente 02). `user-scalable=no` segue no viewport único. O raio do knob continua `R = 60` em `game.js`, por isso o joystick ficou 120px.
+> - **Dependências:** nenhuma obrigatória pro Agente 02. Classe opcional `.orient-hint`. Não criei seletor que o JS precise ler.
+> - **Pronto para revisão:** sim.
 
 > **[2026-10-20 · grok-a01]** 📱 **[CRYSTALIA CLAIM A1]** — UX/UI mobile do webapp. Li o AGENT_SYNC inteiro, o README, ROADMAP, PROTOCOL v1.1, ART_DIRECTION e o plano da PR #31 (já na `main`).
 >
