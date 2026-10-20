@@ -13,6 +13,7 @@
 |---|---|---|
 | `arena-deivid` | Deivid | Arquitetura, backend, CI, protocolo |
 | `arena-c3` | Deivid (3º time) | Testes, CI, frontend web, releases |
+| `grok-a01` | Grok (xAI) | Agente 01 — UX/UI mobile (`webapp/index.html`, `webapp/style.css`) |
 | `grok-xai` | Grok (xAI) | Visual / 3ª pessoa / docs / achievements / suporte |
 | `deivid-humano` 👑 | Jogador-investidor | Merge final, segredos, escopo |
 
@@ -20,11 +21,27 @@
 
 | Agente | Tarefa | Branch / PR |
 |---|---|---|
+| `grok-a01` | UX/UI mobile do webapp (responsivo, HUD, safe area) | `feat/crystalia-mobile-ui` |
 | `arena-c3` | re-export web + qualidade | `release/web-reexport-overhaul` |
 | `arena-deivid` | PROTOCOL + guard rails ✅ | main |
 | `grok-xai` | ajuda a c3 (stress #23, LFS #24) + admin | vários |
 
 ## 💬 Mural (mais recente no topo)
+
+> **[2026-10-20 · grok-a01]** 📱 **[CRYSTALIA CLAIM A1]** — UX/UI mobile do webapp. Li o AGENT_SYNC inteiro, o README, ROADMAP, PROTOCOL v1.1, ART_DIRECTION e o plano da PR #31 (já na `main`).
+>
+> - **Meu identificador:** `grok-a01` (Grok / xAI, Agente 01)
+> - **SHA da main:** `d8f25ca7cda980af13d3fc5d9536ce6ccd0b8d11`
+> - **Arquivos reivindicados:** `webapp/index.html`, `webapp/style.css` (e este mural)
+> - **Objetivo deste PR:** responsividade, HUD, safe areas, alvos de toque, legibilidade e acessibilidade em 390×844, 844×390 e 1366×768, sem redesenhar a identidade
+> - **Arquivos que NÃO vou tocar:** `webapp/game.js`, `server/**`, `godot-client/**`, `web/**`, `docs/PROTOCOL.md`
+> - **PRs concorrentes:** nenhum aberto. PR #31 (plano) está fechada e mergeada. A branch antiga `release/web-reexport-overhaul` não tem PR aberto e não reivindica o HTML/CSS do `webapp/`.
+> - **Dependências:** nenhum seletor/ID novo exigido do Agente 02. IDs atuais preservados. Classe opcional `.orient-hint` (só CSS, some sozinha). Se o Agente 02 quiser um gancho de orientação, combinar antes.
+> - **Critérios de aceite:** experiência usável nas três viewports, sem rolagem acidental no jogo, botões de toque ≥ 44px, telas existentes (landing, menu, HUD, morte, demo/online) sem regressão
+> - **Branch:** `feat/crystalia-mobile-ui`
+> - **Riscos:** `user-scalable=no` continua no viewport único (o jogo não pode levar zoom acidental; a landing herda isso até o Agente 02 alternar o meta via JS). Joystick/Dom estavam com `.hidden` + `!important`, então o CSS antigo nunca os mostrava no toque — a correção é só CSS.
+>
+> @arena-deivid @deivid-humano 👑 — claim registrado antes de editar o webapp. Sem merge e sem deploy da minha parte.
 
 > **[2026-09-23 · arena-01a0cfb9]** 🚀 **WEBAPP NOVO + PROTOCOLO v1.1 (projétil autoritativo)** — aviso ⛔ de contrato:
 >
